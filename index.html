@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nexa transaction analysis engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#F4F6F3; --surface:#FFFFFF; --ink:#16201C; --muted:#57635E; --dim:#9AA49F;
+  --rule:#D7DDD8; --rule-strong:#B4BDB7; --knob:#FFFFFF;
+  --bank:#0D7264; --bank-soft:rgba(13,114,100,.10);
+  --vat:#9C6810; --vat-soft:rgba(156,104,16,.12);
+  --out-bg:#1D2925; --out-ink:#F1F4F2;
+  --good:#1A7741; --good-soft:rgba(26,119,65,.10);
+  --warn:#A2650E; --warn-soft:rgba(162,101,14,.12);
+  --bad:#AE2A21; --bad-soft:rgba(174,42,33,.10);
+  --wire:#7B8882; --focus:#1F6FD1; --app:#5F6478; --dock-good:#7FE0A6; --dock-warn:#F3C26A; --dock-bad:#FF9A8F;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1412; --surface:#161D1A; --ink:#E2E8E4; --muted:#9AA6A0; --dim:#5D6863;
+    --rule:#28322E; --rule-strong:#3B4742; --knob:#E2E8E4;
+    --bank:#4DB4A2; --bank-soft:rgba(77,180,162,.14);
+    --vat:#D8A545; --vat-soft:rgba(216,165,69,.14);
+    --out-bg:#E2E8E4; --out-ink:#111815;
+    --good:#4CC07D; --good-soft:rgba(76,192,125,.13);
+    --warn:#E0A33A; --warn-soft:rgba(224,163,58,.14);
+    --bad:#EE6C60; --bad-soft:rgba(238,108,96,.13);
+    --wire:#8D9A94; --focus:#73A9F2; --app:#A4A9BC; --dock-good:#1A7741; --dock-warn:#8A5A0C; --dock-bad:#B5332A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1412; --surface:#161D1A; --ink:#E2E8E4; --muted:#9AA6A0; --dim:#5D6863;
+  --rule:#28322E; --rule-strong:#3B4742; --knob:#E2E8E4;
+  --bank:#4DB4A2; --bank-soft:rgba(77,180,162,.14);
+  --vat:#D8A545; --vat-soft:rgba(216,165,69,.14);
+  --out-bg:#E2E8E4; --out-ink:#111815;
+  --good:#4CC07D; --good-soft:rgba(76,192,125,.13);
+  --warn:#E0A33A; --warn-soft:rgba(224,163,58,.14);
+  --bad:#EE6C60; --bad-soft:rgba(238,108,96,.13);
+  --wire:#8D9A94; --focus:#73A9F2; --app:#A4A9BC; --dock-good:#1A7741; --dock-warn:#8A5A0C; --dock-bad:#B5332A;
+  color-scheme: dark;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);-webkit-text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1300px;margin:0 auto;padding:0 20px}
+
+/* header */
+.top{padding:30px 20px 18px}
+h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font-weight:700;margin:0 0 12px;max-width:16ch}
+.lede{margin:0;color:var(--muted);max-width:64ch;font-size:16px}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:12;background:var(--paper);border-bottom:1px solid var(--rule)}
+.tabs{display:flex;gap:6px;padding-top:10px;padding-bottom:10px}
+.tab{appearance:none;border:1px solid var(--rule);background:var(--surface);font-weight:600;font-size:14px;padding:7px 15px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* map */
+.maphead{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between;margin:20px 0 16px}
+.hint{margin:0;font-size:15px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none}
+.dot.bank{background:var(--bank)} .dot.vat{background:var(--vat)} .dot.app{background:var(--app)}
+.sq-out{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--out-bg)}
+.maplayout{display:block}
+@media (min-width:1240px){.maplayout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:36px;align-items:start}}
+.graph{position:relative;display:grid;gap:40px;padding-bottom:28px}
+@media (min-width:900px){.graph{grid-template-columns:minmax(180px,230px) minmax(240px,1fr) minmax(170px,210px);column-gap:88px;align-items:stretch}}
+.wires{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:0}
+.band{position:relative;z-index:1;display:flex;flex-direction:column;min-width:0}
+.band h2{font-size:19px;letter-spacing:-0.01em;margin:0;line-height:1.2}
+.band .count{margin:2px 0 10px;font-size:13px;color:var(--muted)}
+.band h3{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 7px}
+.band-body{display:flex;flex-direction:column}
+@media (min-width:900px){
+  .band-body{flex:1}
+  .band-in .band-body{justify-content:center}
+  .band-out .band-body{justify-content:space-around}
+  .band-out .nodes{flex:1;display:flex;flex-direction:column;justify-content:space-around}
+}
+.nodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:8px}
+@media (min-width:900px){.nodes{grid-template-columns:1fr}}
+.node{appearance:none;position:relative;display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 11px;cursor:pointer;min-width:0;transition:border-color .15s,box-shadow .15s,color .15s}
+.node > *{transition:opacity .15s}
+.node .nm{font-weight:600;font-size:14px;line-height:1.25}
+.node .sub{font-size:12.5px;color:var(--muted);line-height:1.3}
+.node-an .nm{padding-right:26px}
+.node .dots{position:absolute;top:10px;right:10px;display:flex;gap:3px}
+.node-in{border-left:3px solid var(--bank)}
+.node-in.vat{border-left-color:var(--vat)}
+.node-in.app{border-left-color:var(--app)}
+.node-out{background:var(--out-bg);border-color:var(--out-bg);color:var(--out-ink)}
+.node-out .sub{color:var(--out-ink);opacity:.72}
+.node:hover{border-color:var(--rule-strong)}
+.node-in:hover{border-left-color:var(--bank)} .node-in.vat:hover{border-left-color:var(--vat)} .node-in.app:hover{border-left-color:var(--app)}
+.graph.has-sel .node:not(.is-rel):not(.is-sel) > *{opacity:.3}
+.node.is-sel{box-shadow:0 0 0 2px var(--ink)}
+.node-out.is-sel{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--out-bg)}
+.wire{fill:none;stroke-width:1.2;opacity:.17;transition:opacity .15s}
+.wire.bank{stroke:var(--bank)} .wire.vat{stroke:var(--vat)} .wire.app{stroke:var(--app)} .wire.out{stroke:var(--wire)}
+.graph.has-sel .wire{opacity:.035}
+.graph.has-sel .wire.on{opacity:.95;stroke-width:2}
+
+/* detail */
+.detail{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px 18px 18px}
+.detail h3{font-size:21px;line-height:1.2;letter-spacing:-0.01em;margin:2px 0 6px}
+.detail p{margin:0 0 10px}
+.d-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.d-kind{margin:0;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.d-ids{font-weight:600;color:var(--muted);font-size:14px;margin:0 0 8px}
+.d-close{appearance:none;border:1px solid var(--rule);background:transparent;border-radius:999px;width:30px;height:30px;font-size:17px;line-height:1;cursor:pointer;color:var(--muted)}
+.d-sec{margin-top:14px}
+.d-sec h4{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px}
+.d-sec ul{margin:0;padding-left:18px}
+.d-sec li{margin:2px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--rule);background:transparent;border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;text-align:left}
+.chip:hover{border-color:var(--rule-strong)}
+.chip .sq-out{width:9px;height:9px}
+@media (min-width:1240px){.detail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 72px);max-height:calc(100vh - 96px);overflow:auto}.d-close{display:none}}
+@media (max-width:1239px){
+  .detail{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-height:54vh;overflow:auto;z-index:14;box-shadow:0 12px 40px rgba(0,0,0,.22);display:none}
+  .detail.open{display:block}
+}
+@media (min-width:700px) and (max-width:1239px){.detail{left:auto;width:400px}}
+
+/* simulator */
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 18px}
+.presets .lbl{width:100%;font-size:13px;color:var(--muted);margin:0 0 2px}
+.preset{appearance:none;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:500;cursor:pointer}
+.preset[aria-pressed="true"]{border-color:var(--bank);background:var(--bank-soft);font-weight:600}
+.sim{display:grid;gap:22px;padding-bottom:20px}
+@media (min-width:980px){
+  .sim{grid-template-columns:minmax(320px,390px) minmax(0,1fr);align-items:start}
+  .controls{grid-column:1;grid-row:1}
+  .results{grid-column:2;grid-row:1;position:sticky;top:calc(env(safe-area-inset-top,0px) + 70px);max-height:calc(100vh - 88px);overflow:auto;padding-right:2px}
+}
+.verdict{border:1.5px solid;border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.verdict.good{border-color:var(--good);background:var(--good-soft)}
+.verdict.warn{border-color:var(--warn);background:var(--warn-soft)}
+.verdict.bad{border-color:var(--bad);background:var(--bad-soft)}
+.v-state{font-size:30px;font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin:0}
+.verdict.good .v-state{color:var(--good)} .verdict.warn .v-state{color:var(--warn)} .verdict.bad .v-state{color:var(--bad)}
+.v-sum{font-size:17px;font-weight:600;margin:6px 0 2px}
+.v-note{font-size:13.5px;color:var(--muted);margin:0 0 10px}
+.reasons{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.reasons li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14px}
+.code{appearance:none;border:1px solid var(--rule-strong);background:var(--surface);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;min-width:44px;text-align:center}
+.code.bad{border-color:var(--bad);color:var(--bad)} .code.warn{border-color:var(--warn);color:var(--warn)}
+.panels{display:grid;gap:14px}
+@media (min-width:640px){.panels{grid-template-columns:1fr 1fr}.span2{grid-column:1/-1}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px 16px 16px;min-width:0}
+.panel h3{font-size:15.5px;margin:0 0 10px;letter-spacing:-0.005em}
+.panel .sub{font-size:13px;color:var(--muted);margin:-6px 0 10px}
+.big{font-size:34px;font-weight:700;letter-spacing:-0.02em;line-height:1}
+.gradepill{display:inline-block;margin-left:8px;font-size:15px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--ink);color:var(--paper);vertical-align:6px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 14px;margin:12px 0 0;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600;text-align:right}
+.bars{display:grid;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:13.5px}
+.bar .track{grid-column:1/-1;height:7px;border-radius:4px;background:var(--rule);overflow:hidden}
+.bar .fill{height:100%;border-radius:4px;background:var(--ink)}
+.bar .val{font-weight:600;white-space:nowrap}
+.bar.bind .fill{background:var(--bank)} .bar.bind .nm{font-weight:700}
+.bar.over .fill{background:repeating-linear-gradient(90deg,var(--rule-strong) 0 6px,transparent 6px 9px)}
+.bar .nm button{appearance:none;border:0;background:none;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:var(--rule-strong);text-underline-offset:3px}
+.sizing-line{margin:12px 0 0;font-size:14px}
+.sched{display:flex;align-items:flex-end;gap:2px;height:96px;margin-top:6px}
+.sched i{flex:1;min-width:2px;background:var(--bank);border-radius:2px 2px 0 0}
+.sched-x{display:flex;gap:2px;margin-top:4px;font-size:11.5px;color:var(--muted)}
+.sched-x span{flex:1;min-width:2px;text-align:center;overflow:visible;white-space:nowrap}
+.meter{height:9px;border-radius:5px;background:var(--rule);overflow:hidden;margin:4px 0 10px}
+.meter i{display:block;height:100%;border-radius:5px}
+.ded{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.ded li{display:grid;grid-template-columns:44px 1fr;gap:8px}
+.ded b{font-weight:700;color:var(--warn)}
+.ded small{display:block;color:var(--muted);font-size:13px}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:14px}
+.checks li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.checks small{display:block;color:var(--muted);font-size:12.5px}
+.st{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.st.pass{color:var(--good);background:var(--good-soft)} .st.flag{color:var(--warn);background:var(--warn-soft)} .st.fail{color:var(--bad);background:var(--bad-soft)} .st.skip{color:var(--muted);background:var(--rule)}
+
+/* controls */
+.group{border:1px solid var(--rule);border-radius:12px;background:var(--surface);margin-bottom:10px;overflow:hidden}
+.group summary{list-style:none;cursor:pointer;padding:12px 15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.group summary::-webkit-details-marker{display:none}
+.group summary::after{content:"+";color:var(--muted);font-weight:400;font-size:18px;line-height:1}
+.group[open] summary::after{content:"\2212"}
+.ctl{padding:10px 15px 12px;border-top:1px solid var(--rule)}
+.ctl .row{display:flex;justify-content:space-between;gap:12px;font-size:14px;align-items:baseline}
+.ctl output{font-weight:700;white-space:nowrap}
+.ctl input[type=range]{width:100%;margin:8px 0 0;accent-color:var(--bank)}
+.ctl select{width:100%;margin-top:6px;padding:8px 10px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--surface)}
+.ctl .help{font-size:12.5px;color:var(--muted);margin-top:3px}
+.ctl.off{opacity:.42}
+.switch{display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;position:relative}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch .tr{flex:none;width:40px;height:23px;border-radius:12px;background:var(--rule-strong);position:relative;transition:background .15s}
+.switch .tr::after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:var(--knob);transition:transform .15s}
+.switch input:checked + .tr{background:var(--bank)}
+.switch input:checked + .tr::after{transform:translateX(17px)}
+.switch input:focus-visible + .tr{outline:2px solid var(--focus);outline-offset:2px}
+
+.dock{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:13;display:none;align-items:center;justify-content:space-between;gap:12px;border:0;border-radius:12px;padding:11px 15px;background:var(--ink);color:var(--paper);cursor:pointer;text-align:left;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.dock.show{display:flex}
+.dock b{font-size:15px}
+.dock .ds-good{color:var(--dock-good)} .dock .ds-warn{color:var(--dock-warn)} .dock .ds-bad{color:var(--dock-bad)}
+@media (min-width:980px){.dock{display:none!important}}
+.rchart{width:100%;height:auto;display:block;margin-top:2px}
+.rchart text{font-size:11px;fill:var(--muted);font-family:inherit}
+.rk{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted);margin:4px 0 0}
+.rk span{display:inline-flex;align-items:center;gap:6px}
+.rk i{display:inline-block;width:14px;height:8px;border-radius:2px}
+.stack{display:flex;height:14px;border-radius:4px;overflow:hidden;margin:4px 0 10px;background:var(--rule)}
+.stack i{display:block;height:100%}
+.legend2{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13.5px}
+.legend2 li{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center}
+.legend2 i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.legend2 b{font-weight:600}
+.ctab{width:100%;border-collapse:collapse;font-size:13.5px}
+.ctab th,.ctab td{text-align:right;padding:5px 4px;border-bottom:1px solid var(--rule)}
+.ctab th:first-child,.ctab td:first-child{text-align:left}
+.ctab th{font-weight:600;color:var(--muted);font-size:12.5px}
+.ctab td.u{font-weight:700}
+.tbl-wrap{overflow-x:auto}
+.foot{font-size:13px;color:var(--muted);margin:10px 0 90px;max-width:70ch}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top wrap">
+  <h1>Nexa transaction analysis engine</h1>
+  <p class="lede">Bank statements, VAT records and a few application fields feed 35 groups of analyses that decide whether we finance a business, how much, at what rate, for how long and when each instalment falls. Tap anything on the map to trace it, or try an applicant and watch the offer change.</p>
+</header>
+<nav class="tabbar" aria-label="Views">
+  <div class="wrap tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-map" aria-controls="view-map" aria-selected="true" type="button">Map</button>
+    <button class="tab" role="tab" id="tab-app" aria-controls="view-app" aria-selected="false" type="button">Try an applicant</button>
+  </div>
+</nav>
+<main class="wrap">
+  <section id="view-map" role="tabpanel" aria-labelledby="tab-map">
+    <div class="maphead">
+      <p class="hint">Tap a box to see what it reads and what it changes.</p>
+      <div class="legend">
+        <span><i class="dot bank"></i>Bank statement data</span>
+        <span><i class="dot vat"></i>VAT data</span>
+        <span><i class="dot app"></i>Application and book data</span>
+        <span><i class="sq-out"></i>Decision</span>
+      </div>
+    </div>
+    <div class="maplayout">
+      <div class="graph" id="graph">
+        <svg class="wires" id="wires" aria-hidden="true"></svg>
+        <section class="band band-in" aria-label="What we read">
+          <h2>What we read</h2>
+          <p class="count">16 data points from three sources</p>
+          <div class="band-body">
+            <h3><i class="dot bank"></i>Bank statements</h3>
+            <div class="nodes" id="n-bank"></div>
+            <h3><i class="dot vat"></i>VAT certificate and returns</h3>
+            <div class="nodes" id="n-vat"></div>
+            <h3><i class="dot app"></i>Application and the book</h3>
+            <div class="nodes" id="n-app"></div>
+          </div>
+        </section>
+        <section class="band band-an" aria-label="What we work out">
+          <h2>What we work out</h2>
+          <p class="count">12 from your framework, 23 added</p>
+          <div class="band-body">
+            <h3>From your framework (a–t and VAT)</h3>
+            <div class="nodes" id="n-old"></div>
+            <h3>Added</h3>
+            <div class="nodes" id="n-new"></div>
+          </div>
+        </section>
+        <section class="band band-out" aria-label="What we decide">
+          <h2>What we decide</h2>
+          <p class="count">8 outputs</p>
+          <div class="band-body"><div class="nodes" id="n-out"></div></div>
+        </section>
+      </div>
+      <aside class="detail" id="detail" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section id="view-app" role="tabpanel" aria-labelledby="tab-app" hidden>
+    <div class="presets" id="presets" role="group" aria-label="Sample applicants"></div>
+    <div class="sim">
+      <div class="results" id="results">
+        <div class="verdict" id="verdict"></div>
+        <div class="panels" id="panels"></div>
+      </div>
+      <div class="controls" id="controls"></div>
+    </div>
+  </section>
+  <p class="foot">Thresholds, weights, sector priors, LGDs, pricing assumptions and probabilities are placeholders to calibrate on the bank’s own data and real repayment outcomes. Everything runs in your browser and nothing is stored.</p>
+</main>
+<button class="dock" id="dock" type="button"></button>
+
+<script>
+(function(){
+'use strict';
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const clamp = (x, a, b) => Math.max(a === undefined ? 0 : a, Math.min(b === undefined ? 1 : b, x));
+const fmtSAR = x => 'SAR ' + Math.round(x).toLocaleString('en-US');
+const pct = (x, d) => (x * 100).toFixed(d || 0) + '%';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- data ---------------- */
+const INPUTS = [
+  {id:'b_amt', src:'bank', name:'Debits and credits', sub:'Amount, posting and value date', desc:'Every line’s amount and date: the raw material for turnover, cash flow and timing.', fields:['Debit and credit amounts','Posting date and value date','Time stamp, where the bank shows one']},
+  {id:'b_narr', src:'bank', name:'Narrative and category', sub:'Description, reference number', desc:'The free-text description, parsed into categories. A wrong “sales” tag inflates turnover, so this parser matters most.', fields:['Description text','Reference or cheque number','Derived category: sales, suppliers, payroll (Mudad), GOSI, rent (Ejar), utilities, ZATCA VAT, EMI, owner and internal transfers, refunds, fees, financing received']},
+  {id:'b_cp', src:'bank', name:'Counterparties', sub:'Payer and payee names, IBANs', desc:'Who pays the business and who it pays, matched across spellings into one ID each.', fields:['Counterparty name','Counterparty IBAN or bank, where shown','Fuzzy-matched counterparty ID']},
+  {id:'b_ch', src:'bank', name:'Channel codes', sub:'POS, transfer, SADAD, ATM, cheque', desc:'How money moved. Separates card settlements, transfers, bills, cash and fees.', fields:['POS / mada settlements','SARIE and instant transfers','International (SWIFT) transfers, in and out','SADAD bill payments','ATM and branch cash','Cheques, standing orders, fees']},
+  {id:'b_bal', src:'bank', name:'Running balance', sub:'Daily, opening and closing', desc:'The balance after every line. Drives liquidity, timing and the integrity check.', fields:['Balance after each line','Opening and closing balance per statement','End-of-day balance series']},
+  {id:'b_hdr', src:'bank', name:'Account header', sub:'Holder name, IBAN, bank, period', desc:'Who owns the account and which period the statement covers.', fields:['Account holder name','IBAN, bank and branch','Statement period']},
+  {id:'b_meta', src:'bank', name:'File metadata', sub:'Producer, edit dates, fonts, source', desc:'Clues inside the file itself about whether it was edited after the bank issued it.', fields:['PDF producer and editing tool','Created and modified dates','Fonts and layout vs bank template','Source: native PDF, scan or open banking']},
+  {id:'v_id', src:'vat', name:'Certificate identity', sub:'Legal name, VAT number, CR', desc:'Who the business is, as registered with ZATCA.', fields:['Legal name, Arabic and English','VAT number (15 digits, starts and ends with 3)','Address and CR number, where shown']},
+  {id:'v_reg', src:'vat', name:'Registration and frequency', sub:'Effective date, monthly or quarterly', desc:'When the business registered and how often it must file.', fields:['Effective registration date','Filing frequency: monthly above SAR 40m turnover, otherwise quarterly']},
+  {id:'v_sales', src:'vat', name:'Declared sales', sub:'Return boxes 1 to 6', desc:'Sales the business declared to ZATCA, split by rate.', fields:['Box 1 standard-rated sales','Box 2 healthcare, education, first house to citizens','Boxes 3 to 5 zero-rated, exports, exempt','Box 6 total sales']},
+  {id:'v_pur', src:'vat', name:'Declared purchases', sub:'Return boxes 7 to 12', desc:'Purchases the business declared, including imports.', fields:['Box 7 standard-rated domestic purchases','Boxes 8 and 9 imports, at customs and reverse charge','Boxes 10 and 11 zero-rated and exempt','Box 12 total purchases']},
+  {id:'v_due', src:'vat', name:'VAT due and corrections', sub:'Return boxes 13 to 16', desc:'What the business owed or reclaimed each period.', fields:['Box 13 VAT due','Box 14 corrections from earlier periods','Box 15 credit carried forward','Box 16 net VAT due or reclaimed']},
+  {id:'v_dates', src:'vat', name:'Periods and filing dates', sub:'Return history', desc:'Which periods were filed and when, against the due date at the end of the following month.', fields:['Tax period start and end','Filing date','Nil returns','Two years requested: the last 8 quarterly or 24 monthly returns']},
+  {id:'a_sec', src:'app', name:'Security offered', sub:'Guarantee, collateral or none', desc:'What stands behind the facility. It sets the loss given default.', fields:['None','Personal guarantee','Kafalah guarantee','Collateral']},
+  {id:'a_sector', src:'app', name:'Sector and owners', sub:'CR activity, owners, directors', desc:'The sector picks the benchmarks and the credibility priors; the owners identify related companies.', fields:['CR activity (sector)','Owners and directors','Other companies they own']},
+  {id:'a_book', src:'app', name:'The rest of the book', sub:'Other applicants and borrowers', desc:'Counterparties, IBANs, owners and addresses of everyone else we have seen, for the network checks.', fields:['Counterparties and IBANs','Owners and addresses','Borrowers that share a buyer']}
+];
+
+const ANALYSES = [
+  {id:'x_cash', old:true, name:'Cash flow and net credit', ids:'a, b, t', uses:['b_amt','b_narr'], feeds:['o_amt','o_sched','o_turn','o_grade'], desc:'Monthly categorised debits and credits, net credit by day, month and average, and a net cash flow statement built from them.', measures:['Debits and credits by category, month on month','Net credit: daily, monthly, average','Low days in the month, low months in the year','Net cash flow statement (t)']},
+  {id:'x_cat', old:true, name:'Business categorisation', ids:'c, g', uses:['b_narr','b_ch','b_cp'], feeds:['o_turn','o_gen'], desc:'Links transaction categories to the stated industry and keeps the underlying lines, not just totals.', measures:['Category to industry mapping','POS, e-commerce and other category detail']},
+  {id:'x_obl', old:true, name:'Existing obligations', ids:'d, e', uses:['b_narr','b_amt','b_cp'], feeds:['o_elig','o_amt','o_grade'], desc:'Finds recurring instalments to other lenders and unusual inflows such as financing received.', measures:['EMIs by lender and day','Financing disbursements received']},
+  {id:'x_conc', old:true, name:'Concentration', ids:'f, R5', uses:['b_cp','b_amt'], feeds:['o_grade'], desc:'How dependent the business is on a few payers or suppliers.', measures:['Top-1 and top-5 share of credits and debits','Herfindahl index (R5, added)','Payer churn (R5, added)']},
+  {id:'x_var', old:true, name:'Variability and consistency', ids:'h, m', uses:['b_amt'], feeds:['o_grade','o_tenor'], desc:'How stable inflows are from month to month, in value and in count.', measures:['Coefficient of variation of inflows','Regularity of volumes and counts']},
+  {id:'x_trf', old:true, name:'Cash, internal and owner transfers', ids:'i, j, k', uses:['b_ch','b_cp','b_hdr'], feeds:['o_turn','o_gen'], desc:'Separates cash and money moving between the owner’s own accounts from real sales.', measures:['Cash deposits and withdrawals by value and count','Transfers between own accounts','Transfers to and from owners’ personal accounts']},
+  {id:'x_bal', old:true, name:'Balances and liquidity', ids:'n, o, s, C5', uses:['b_bal'], feeds:['o_grade','o_amt','o_sched'], desc:'Average, minimum and maximum balances, benchmarked against the proposed instalment.', measures:['Average, minimum, maximum balance','Liquidity vs instalment (n)','Average with chosen categories excluded (s)','Days cash on hand (C5, added)']},
+  {id:'x_ext', old:true, name:'Largest and smallest transactions', ids:'o, C8', uses:['b_amt','b_cp'], feeds:['o_turn','o_amt','o_gen'], desc:'The largest and smallest debit and credit each month, set against that month’s turnover and the average balance. One receipt that dominates its month is treated as one-off; the same amount paid twice within days goes to the duplicate check.', measures:['Largest and smallest credit per month (C8)','Largest and smallest debit per month (C8)','Largest credit as a share of its month; above 40% the excess is one-off','Largest debit against the average balance','Same amount paid twice (F5)']},
+  {id:'x_rec', old:true, name:'Recurring expenses', ids:'p', uses:['b_narr','b_amt'], feeds:['o_amt','o_turn'], desc:'Non-EMI commitments that come before any new instalment.', measures:['VAT payments','Payroll','Rent']},
+  {id:'x_vatrec', old:true, name:'VAT vs statement reconciliation', ids:'VAT section, R2', uses:['v_sales','v_pur','b_amt','b_narr'], feeds:['o_gen','o_turn','o_grade'], desc:'Checks declared sales and purchases against what actually moved through the account.', measures:['VAT sales vs statement credits','VAT purchases vs statement debits','Net value added as implied margin','Turnover coverage ratio (R2, added)']},
+  {id:'x_yoy', old:true, name:'Year-on-year VAT comparison', ids:'VAT section, V8', uses:['v_sales','v_pur','v_dates','b_amt'], feeds:['o_grade','o_gen','o_turn'], desc:'The last four quarters against the four before, for sales, purchases and implied margin, with VAT sales growth checked against growth on the statements. Needs two years: the last 8 quarterly or 24 monthly returns, or every return since registration if the business is younger.', measures:['Year-on-year sales and purchases growth','Change in implied margin','VAT growth vs statement growth; a gap over 25 points flags','One year only: skipped, confidence −5']},
+  {id:'x_map', old:true, name:'VAT items vs statement categories', ids:'VAT section, V9', uses:['v_sales','v_pur','v_due','b_narr','b_cp','b_ch'], feeds:['o_gen','o_grade'], desc:'Each VAT box is matched to the statement flows that should carry it: exports to inward foreign transfers, import VAT to customs payments, reverse charge to outward transfers for services, Box 16 to the ZATCA payment.', measures:['Sales boxes against sales credits by channel','Purchase boxes against supplier, customs and foreign payments','Payroll, GOSI and EMIs must stay out of purchases','Share of declared value traced; under 75% flags']},
+  {id:'n_true', name:'True turnover', ids:'R1', uses:['b_amt','b_narr','b_cp'], feeds:['o_turn','o_amt'], desc:'Gross credits minus internal transfers, owner injections, financing received, refunds and circular returns. Everything downstream uses this number.', measures:['Adjusted monthly turnover','Share of credits removed, by reason']},
+  {id:'n_trend', name:'Growth and seasonality', ids:'R3, R4', uses:['b_amt'], feeds:['o_grade','o_sched','o_tenor'], desc:'Which way the business is heading and the shape of its year.', measures:['12-month growth slope','Last 3 months vs prior 3','Seasonal index by month']},
+  {id:'n_act', name:'Trading activity and channel mix', ids:'R6 to R9', uses:['b_ch','b_amt','b_cp'], feeds:['o_gen','o_grade','o_sched'], desc:'How the business gets paid, how often it trades, and whether its ticket sizes fit its sector.', measures:['Channel mix and drift (R6)','Active trading days, longest gap (R7)','Ticket size vs sector (R8)','B2B payer regularity (R9)']},
+  {id:'n_mar', name:'Margins and cost structure', ids:'M1 to M5', uses:['v_sales','v_pur','b_narr','b_amt'], feeds:['o_grade','o_turn','o_amt'], desc:'What the business keeps from each riyal of sales, and how much of its cost is fixed.', measures:['Implied gross margin from VAT (M1)','Cash operating margin (M2)','Payroll, rent, utility ratios (M3)','Fixed vs variable split, break-even (M4, M5)']},
+  {id:'n_wc', name:'Working capital and headcount', ids:'M6, M7', uses:['b_narr','b_amt','b_cp'], feeds:['o_amt','o_tenor','o_gen'], desc:'How far purchases run ahead of sales, and a staff estimate from payroll and GOSI.', measures:['Days purchases lead sales (M6)','Headcount and revenue per head (M7)']},
+  {id:'n_dscr', name:'Debt service and stress tests', ids:'C1 to C4', uses:['b_amt','b_narr'], feeds:['o_elig','o_amt','o_tenor'], desc:'Cash available for debt service, cover before and after the new instalment, and cover when turnover falls 20%.', measures:['Cash flow available for debt service (C1)','Cover ratio, average and worst quarter (C2)','Cover at −20% turnover (C3)','Existing debt burden and lender count (C4)']},
+  {id:'n_od', name:'Overdraft and drawdown', ids:'C6, C7', uses:['b_bal'], feeds:['o_elig','o_grade'], desc:'How often the account goes below zero and how deep the worst dip is.', measures:['Days below zero and depth (C6)','Largest balance drawdown and recovery (C7)']},
+  {id:'n_cond', name:'Payment conduct', ids:'B1 to B4, B7', uses:['b_narr','b_ch','b_amt','v_dates','v_due'], feeds:['o_elig','o_grade'], desc:'Whether the business pays what it owes, on time. Bounced items are usually the strongest single signal.', measures:['Returned and bounced items (B1)','EMIs paid late, partly or missed (B2)','VAT and GOSI timeliness (B3)','Rent and utility regularity (B4)','Fees and penalties (B7)']},
+  {id:'n_draw', name:'Owner drawings and credit hunger', ids:'B5, B6', uses:['b_cp','b_narr','b_hdr'], feeds:['o_amt','o_grade','o_elig'], desc:'How much cash leaves to the owner, and whether the business is borrowing from several places at once.', measures:['Drawings as a share of cash profit (B5)','New financing and BNPL in the last 90 days (B6)']},
+  {id:'n_vat', name:'VAT compliance', ids:'V1 to V7', uses:['v_reg','v_dates','v_due','v_sales','v_pur','b_narr'], feeds:['o_grade','o_elig','o_gen','o_tenor'], desc:'Filing history, and what the returns say about the business model.', measures:['Filing completeness (V1)','VAT paid vs declared (V2)','Registration age (V3)','Sales mix and import dependence (V4, V5)','Refund positions and corrections (V6, V7)']},
+  {id:'n_doc', name:'Document forensics and identity', ids:'F1 to F3, F12', uses:['b_meta','b_bal','b_hdr','v_id'], feeds:['o_gen'], desc:'Is the file what the bank issued, and does every document name the same business?', measures:['PDF metadata and template match (F1)','Running balance adds up on every line (F2)','Names, IBAN and VAT number match (F3)','No missing pages or months (F12)']},
+  {id:'n_pat', name:'Fraud patterns', ids:'F4 to F11, l, q', uses:['b_amt','b_cp','b_bal','v_sales'], feeds:['o_gen','o_turn'], desc:'Transaction patterns that real trading rarely produces. Builds on your month-end spike (l) and circular (q) checks.', measures:['Benford and round amounts (F4)','Duplicates and reversals (F5)','Circular flows (F6, q)','Window dressing (F7, l)','Pass-through velocity (F8)','Activity mismatch, dormancy then surge (F9, F10)']},
+  {id:'n_sch', name:'Schedule fit', ids:'S1, S2, S4, S5', uses:['b_bal','b_amt','b_ch'], feeds:['o_sched','o_tenor'], desc:'Fits instalments to the account’s own cash cycle.', measures:['Best instalment day by balance coverage (S1)','Seasonal instalment profile (S2)','Disbursement timing (S4)','Fixed instalment or split settlement (S5)']},
+  {id:'n_conf', name:'Data confidence and substitutes', ids:'Missing-data rules', uses:['b_hdr','b_meta','v_id','v_sales'], feeds:['o_amt','o_elig'], desc:'Checks what is missing and builds a substitute: a synthetic cash flow statement from categorised lines, a proxy P&L from VAT boxes. Each gap lowers confidence, which scales the amount.', measures:['Synthetic cash flow statement','Proxy P&L from VAT boxes','Confidence score, 0 to 100','Below 60: manual review']},
+  {id:'n_payer', name:'Payer quality', ids:'R10', uses:['b_cp','b_ch'], feeds:['o_grade','o_amt'], desc:'Who pays the business, not just how concentrated they are. Government and large corporates rarely fail but can pay late; SMEs can fail.', measures:['Main payer type: government, corporate, SME or individuals','Payment-delay and payer-failure shocks fed into the simulation (C9)','Adjustment to the revenue-quality score']},
+  {id:'n_rel', name:'Related-party flows', ids:'R11', uses:['b_cp','a_sector'], feeds:['o_turn','o_amt','o_gen'], desc:'Money to and from companies with the same owners or directors. Treated like owner transfers, because it is not trading.', measures:['Receipts from related companies, removed from turnover','Payments to related companies, treated like drawings','Related share of credits and debits']},
+  {id:'n_hijri', name:'Hijri-aligned seasonality', ids:'R12, optional', uses:['b_amt','a_sector'], feeds:['o_sched'], desc:'For businesses whose peak follows Ramadan and Eid, the peak moves about 11 days earlier each Gregorian year. Off by default.', measures:['Peak month for each year of the tenor','Used by the seasonal schedule (S2) and the simulation (C9)']},
+  {id:'n_lag', name:'Lag-adjusted VAT reconciliation', ids:'V10', uses:['v_sales','b_amt','b_cp'], feeds:['o_gen','o_grade'], desc:'VAT sales are invoiced; statements show cash. Allowing for the collection lag stops slow-paying customers being mistaken for an undisclosed account.', measures:['Collection lag from payer intervals (R9)','Coverage shifted by the lag, over rolling two-quarter windows','Tolerance band widens by 0.1 per 100 days of lag','Only Box 1 grossed up at 15%']},
+  {id:'n_net', name:'Cross-applicant network', ids:'F13', uses:['b_cp','b_hdr','a_book','a_sector'], feeds:['o_gen'], desc:'Links between this applicant and others: shared counterparties, IBANs, owners or addresses. It finds fraud rings, and borrowers that all depend on one buyer.', measures:['Shared owner, IBAN or address: soft flag','Common buyers across the book','Circular flows between applicants']},
+  {id:'n_sim', name:'Cash-flow simulation and PD over the tenor', ids:'C9 to C11', uses:['b_amt','b_bal','b_cp'], feeds:['o_amt','o_tenor','o_grade','o_price'], desc:'Simulates 600 monthly cash-flow paths over the term to find the chance each instalment is missed, keeps the chance of 90+ days past due under 5%, and spreads the 12-month PD over the tenor.', measures:['Chance each instalment is missed (C9)','Turnover fall before cover breaks (C10)','Cumulative and lifetime PD (C11)']},
+  {id:'n_cred', name:'Credibility weighting', ids:'Z1', uses:['a_sector','b_amt','v_sales'], feeds:['o_grade','o_amt','o_sched'], desc:'Blends the business’s own growth, seasonality, margin and variability with sector priors, weighted by how many months of data back them.', measures:['Z = n ÷ (n + 4)','12 months of data: 75% own figures, 25% sector','Under 12 months: seasonality from the sector alone']},
+  {id:'n_loss', name:'Loss and pricing', ids:'L1 to L5', uses:['a_sec','b_amt'], feeds:['o_price','o_amt'], desc:'Turns PD into an expected loss in riyals and a profit rate that covers it, then checks the return on capital.', measures:['LGD by security (L1)','Exposure each month (L2)','Lifetime expected loss (L3)','Risk-based profit rate (L4)','Return on capital against the hurdle (L5)']},
+  {id:'n_after', name:'Monitoring and validation', ids:'A1, A2, after launch', uses:['b_amt','b_bal','b_narr'], feeds:['o_grade'], desc:'Starts once financing is on the book: monthly reruns on the live account for early warning and IFRS 9 staging, and validation of the scorecard against real outcomes.', measures:['Behavioural score and watch-list (A1)','IFRS 9 stage triggers (A1)','Gini, calibration, PSI and reject inference (A2)']}
+];
+
+const OUTPUTS = [
+  {id:'o_gen', name:'Genuineness', sub:'Pass, refer or fail', desc:'Fraud gate, run before anything else. An edited file or identity mismatch is a hard fail; two or more soft flags send the case to an underwriter.'},
+  {id:'o_elig', name:'Eligibility', sub:'Approve, refer or decline', desc:'Knock-out rules: 4 or more bounced items, 3 or more missed EMIs, over 30 days below zero, existing instalments above 35% of turnover, under a year trading, under 6 months of statements, or no room for a new instalment.'},
+  {id:'o_grade', name:'Risk grade and PD', sub:'Score 0 to 1000, grade A to E', desc:'Weighted scorecard: capacity 25%, revenue 20%, conduct 20%, margins 15%, VAT 10%, profile 10%. Grade D goes to review, E is declined. PD means the 12-month chance of 90+ days past due, a credit restructure or a write-off; C11 extends it over the tenor.'},
+  {id:'o_amt', name:'Amount', sub:'Facility limit in SAR', desc:'The lowest of what cash flow can service, the grade’s share of turnover, the policy cap and the request, multiplied by data confidence, then cut further if the simulated chance of 90+ days past due is over 5%.'},
+  {id:'o_tenor', name:'Tenor', sub:'Months', desc:'The shortest term whose instalment fits stressed capacity and keeps the simulated chance of 90+ days past due under 5%, capped by grade, business age and months of data.'},
+  {id:'o_sched', name:'Schedule and instalment day', sub:'When, and how much each month', desc:'Instalment a few days after the main inflows, a seasonal profile when the year has a clear shape, and split settlement for card-heavy merchants.'},
+  {id:'o_price', name:'Pricing and expected loss', sub:'Profit rate, EL, return', desc:'A risk-based profit rate built from cost of funds, expected loss, capital charge and operating cost, with lifetime expected loss in riyals and the return on capital against a 15% hurdle.'},
+  {id:'o_turn', name:'Turnover and margin', sub:'Adjusted figures', desc:'Turnover after removing non-trading credits, reconciled to VAT, with cash and VAT-implied margins.'}
+];
+
+const byId = {};
+INPUTS.forEach(n => { n.kind = 'in'; byId[n.id] = n; });
+ANALYSES.forEach(n => { n.kind = 'an'; byId[n.id] = n; });
+OUTPUTS.forEach(n => { n.kind = 'out'; byId[n.id] = n; });
+const EDGES = [];
+ANALYSES.forEach(a => {
+  a.uses.forEach(u => EDGES.push({from:u, to:a.id, cls:byId[u].src}));
+  a.feeds.forEach(f => EDGES.push({from:a.id, to:f, cls:'out'}));
+});
+
+/* ---------------- map ---------------- */
+const nodeEl = {};
+function dotsFor(a){
+  const bank = a.uses.some(u => byId[u].src === 'bank');
+  const vat = a.uses.some(u => byId[u].src === 'vat');
+  const app = a.uses.some(u => byId[u].src === 'app');
+  return '<span class="dots" aria-hidden="true">' + (bank ? '<i class="dot bank"></i>' : '') + (vat ? '<i class="dot vat"></i>' : '') + (app ? '<i class="dot app"></i>' : '') + '</span>';
+}
+function makeNode(n){
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.dataset.id = n.id;
+  if (n.kind === 'in') {
+    b.className = 'node node-in ' + n.src;
+    b.innerHTML = '<span class="nm">' + n.name + '</span><span class="sub">' + n.sub + '</span>';
+  } else if (n.kind === 'an') {
+    b.className = 'node node-an';
+    b.innerHTML = dotsFor(n) + '<span class="nm">' + n.name + '</span><span class="sub">' + n.ids + '</span>';
+  } else {
+    b.className = 'node node-out';
+    b.innerHTML = '<span class="nm">' + n.name + '</span><span class="sub">' + n.sub + '</span>';
+  }
+  b.addEventListener('click', () => select(sel === n.id ? null : n.id));
+  nodeEl[n.id] = b;
+  return b;
+}
+INPUTS.forEach(n => $({bank:'#n-bank', vat:'#n-vat', app:'#n-app'}[n.src]).appendChild(makeNode(n)));
+ANALYSES.forEach(n => $(n.old ? '#n-old' : '#n-new').appendChild(makeNode(n)));
+OUTPUTS.forEach(n => $('#n-out').appendChild(makeNode(n)));
+
+function related(id){
+  const nodes = new Set([id]), edges = new Set();
+  const k = byId[id].kind;
+  if (k === 'in') {
+    ANALYSES.forEach(a => { if (a.uses.includes(id)) { nodes.add(a.id); edges.add(id + '|' + a.id); a.feeds.forEach(f => { nodes.add(f); edges.add(a.id + '|' + f); }); } });
+  } else if (k === 'an') {
+    const a = byId[id];
+    a.uses.forEach(u => { nodes.add(u); edges.add(u + '|' + id); });
+    a.feeds.forEach(f => { nodes.add(f); edges.add(id + '|' + f); });
+  } else {
+    ANALYSES.forEach(a => { if (a.feeds.includes(id)) { nodes.add(a.id); edges.add(a.id + '|' + id); a.uses.forEach(u => { nodes.add(u); edges.add(u + '|' + a.id); }); } });
+  }
+  return {nodes, edges};
+}
+
+function drawWires(){
+  const g = $('#graph'), svg = $('#wires');
+  if (!g.offsetParent) return;
+  const gr = g.getBoundingClientRect();
+  const w = g.offsetWidth, h = g.offsetHeight;
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+  let out = '';
+  EDGES.forEach(e => {
+    const a = nodeEl[e.from].getBoundingClientRect(), b = nodeEl[e.to].getBoundingClientRect();
+    let d;
+    if (b.left >= a.right - 1) {
+      const x1 = a.right - gr.left, y1 = a.top + a.height / 2 - gr.top, x2 = b.left - gr.left, y2 = b.top + b.height / 2 - gr.top, dx = (x2 - x1) / 2;
+      d = 'M' + x1 + ' ' + y1 + 'C' + (x1 + dx) + ' ' + y1 + ' ' + (x2 - dx) + ' ' + y2 + ' ' + x2 + ' ' + y2;
+    } else {
+      const x1 = a.left + a.width / 2 - gr.left, y1 = a.bottom - gr.top, x2 = b.left + b.width / 2 - gr.left, y2 = b.top - gr.top, dy = Math.max(28, (y2 - y1) / 2);
+      d = 'M' + x1 + ' ' + y1 + 'C' + x1 + ' ' + (y1 + dy) + ' ' + x2 + ' ' + (y2 - dy) + ' ' + x2 + ' ' + y2;
+    }
+    out += '<path class="wire ' + e.cls + '" data-k="' + e.from + '|' + e.to + '" d="' + d + '"/>';
+  });
+  svg.innerHTML = out;
+  applySel();
+}
+
+let sel = null;
+function applySel(){
+  const g = $('#graph'), svg = $('#wires');
+  if (!sel) {
+    g.classList.remove('has-sel');
+    Object.values(nodeEl).forEach(el => el.classList.remove('is-sel', 'is-rel'));
+    $$('.wire', svg).forEach(p => p.classList.remove('on'));
+    return;
+  }
+  const r = related(sel);
+  g.classList.add('has-sel');
+  Object.entries(nodeEl).forEach(([id, el]) => {
+    el.classList.toggle('is-sel', id === sel);
+    el.classList.toggle('is-rel', r.nodes.has(id) && id !== sel);
+    el.setAttribute('aria-pressed', id === sel ? 'true' : 'false');
+  });
+  const on = [];
+  $$('.wire', svg).forEach(p => { const hit = r.edges.has(p.dataset.k); p.classList.toggle('on', hit); if (hit) on.push(p); });
+  on.forEach(p => svg.appendChild(p));
+}
+
+function kindLabel(n){
+  if (n.kind === 'in') return '<i class="dot ' + n.src + '"></i>' + ({bank:'Bank statement data', vat:'VAT data', app:'Application and book data'}[n.src]);
+  if (n.kind === 'an') return n.old ? 'Analysis from your framework' : 'Added analysis';
+  return '<i class="sq-out"></i>Decision';
+}
+function chip(id){
+  const n = byId[id];
+  const mark = n.kind === 'in' ? '<i class="dot ' + n.src + '"></i>' : n.kind === 'out' ? '<i class="sq-out"></i>' : '';
+  return '<button type="button" class="chip" data-go="' + id + '">' + mark + n.name + '</button>';
+}
+function sec(title, inner){ return '<div class="d-sec"><h4>' + title + '</h4>' + inner + '</div>'; }
+function renderDetail(){
+  const d = $('#detail');
+  if (!sel) {
+    d.classList.remove('open');
+    d.innerHTML = '<p class="d-kind">Reading the map</p><h3>Left to right: read, work out, decide</h3><p>Data points on the left feed the analyses in the middle, which feed the decisions on the right. Tap any box to light up its links, then tap a name here to follow one.</p>';
+    return;
+  }
+  const n = byId[sel];
+  let h = '<div class="d-top"><p class="d-kind">' + kindLabel(n) + '</p><button type="button" class="d-close" aria-label="Close">×</button></div><h3>' + n.name + '</h3>';
+  if (n.kind === 'an') h += '<p class="d-ids">' + n.ids + '</p>';
+  h += '<p>' + n.desc + '</p>';
+  if (n.kind === 'in') {
+    h += sec('Contains', '<ul>' + n.fields.map(f => '<li>' + f + '</li>').join('') + '</ul>');
+    h += sec('Used by', '<div class="chips">' + ANALYSES.filter(a => a.uses.includes(n.id)).map(a => chip(a.id)).join('') + '</div>');
+  } else if (n.kind === 'an') {
+    h += sec('Measures', '<ul>' + n.measures.map(f => '<li>' + f + '</li>').join('') + '</ul>');
+    h += sec('Reads', '<div class="chips">' + n.uses.map(chip).join('') + '</div>');
+    h += sec('Changes', '<div class="chips">' + n.feeds.map(chip).join('') + '</div>');
+  } else {
+    h += sec('Built from', '<div class="chips">' + ANALYSES.filter(a => a.feeds.includes(n.id)).map(a => chip(a.id)).join('') + '</div>');
+  }
+  d.innerHTML = h;
+  d.classList.add('open');
+}
+$('#detail').addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go) { select(go.dataset.go); nodeEl[go.dataset.go].scrollIntoView({block:'nearest', behavior: reduceMotion ? 'auto' : 'smooth'}); return; }
+  if (e.target.closest('.d-close')) select(null);
+});
+function select(id){ sel = id; applySel(); renderDetail(); }
+
+/* ---------------- simulator ---------------- */
+const GRADES = {A:{k:.30, n:36, rate:.08}, B:{k:.25, n:24, rate:.10}, C:{k:.20, n:18, rate:.12}, D:{k:.15, n:12, rate:.14}};
+const WEIGHTS = [
+  ['cap','Repayment capacity',.25,'n_dscr'],
+  ['rev','Revenue quality',.20,'n_trend'],
+  ['con','Conduct',.20,'n_cond'],
+  ['mar','Margins and cost',.15,'n_mar'],
+  ['vat','VAT compliance',.10,'n_vat'],
+  ['pro','Business profile',.10,'n_vat']
+];
+const POLICY_CAP = 2000000, MIN_FACILITY = 10000;
+const SECTORS = {
+  retail:{name:'Retail', g:6, sw:20, m:12, cv:15},
+  food:{name:'Food and hospitality', g:8, sw:25, m:15, cv:18},
+  contracting:{name:'Contracting', g:5, sw:35, m:10, cv:30},
+  wholesale:{name:'Wholesale and trade', g:5, sw:15, m:8, cv:20},
+  services:{name:'Services', g:7, sw:10, m:18, cv:15}
+};
+const SECURITY = {none:['None', 0.65], pg:['Personal guarantee', 0.50], kafalah:['Kafalah guarantee', 0.30], collateral:['Collateral', 0.25]};
+const PAYERS = {
+  individuals:{name:'Individuals (retail customers)', adj:0, p:0, recover:true},
+  government:{name:'Government', adj:6, p:0.05, recover:true},
+  corporate:{name:'Large corporate', adj:4, p:0.03, recover:true},
+  sme:{name:'SMEs', adj:-4, p:0.03, recover:false}
+};
+const PRICE = {funds:0.055, ops:0.015, capital:0.06, hurdle:0.15, cap:0.20};
+const CRED_K = 4, SIM_PATHS = 600, SIM_TARGET = 0.05;
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const RAND = (function(){
+  const r = mulberry32(20261107), N = SIM_PATHS * 36, z = new Float64Array(N), u = new Float64Array(N);
+  for (let i = 0; i < N; i++) { const a = r() || 1e-12, b = r(); z[i] = Math.sqrt(-2 * Math.log(a)) * Math.cos(2 * Math.PI * b); u[i] = r(); }
+  return {z, u};
+})();
+function seasonF(mo, i, peak, sw, hijri){
+  const pk = hijri ? peak - (11 / 30.44) * (i / 12) : peak;
+  return 1 + sw * Math.cos(2 * Math.PI * (mo - pk) / 12);
+}
+function buildCF(b, start){
+  const v = 0.8 * (1 - b.m), F = 0.2 * b.T * (1 - b.m), rho = 0.5, sq = Math.sqrt(1 - rho * rho), sig = b.cv, half = sig * sig / 2;
+  const base = new Float64Array(36);
+  for (let t = 0; t < 36; t++) base[t] = b.T * Math.pow(1 + b.g, t / 12) * Math.max(0.05, seasonF((start + t) % 12, t, b.peak, b.sw, b.hijri));
+  const cf = new Float64Array(SIM_PATHS * 36), pp = b.payer.p, rec = b.payer.recover, shock = b.top;
+  for (let p = 0; p < SIM_PATHS; p++) {
+    const o = p * 36;
+    let e = 0, carry = 0;
+    for (let t = 0; t < 36; t++) {
+      e = rho * e + sq * RAND.z[o + t];
+      let R = base[t] * Math.exp(sig * e - half) + carry;
+      carry = 0;
+      if (pp > 0 && RAND.u[o + t] < pp) { const lost = R * shock; R -= lost; if (rec) carry = lost; }
+      cf[o + t] = (R * (1 - v) - F) * b.keep - b.emi;
+    }
+  }
+  return cf;
+}
+function simulate(b, pays, Pbar){
+  const n = pays.length, miss = new Float64Array(n), cum = new Float64Array(n), cap = 3 * (Pbar + b.surplus);
+  let defaults = 0;
+  for (let p = 0; p < SIM_PATHS; p++) {
+    const o = p * 36;
+    let buf = Pbar + b.surplus, arrears = 0, run = 0, dead = false;
+    for (let t = 0; t < n; t++) {
+      if (dead) { miss[t]++; cum[t]++; continue; }
+      let cash = buf + b.cf[o + t];
+      const due = pays[t] + arrears;
+      if (cash >= due) { cash -= due; arrears = 0; run = 0; }
+      else { arrears = due - Math.max(0, cash); cash = 0; if (arrears > 0.5 * pays[t]) { run++; miss[t]++; } else run = 0; }
+      buf = Math.min(cash, cap);
+      if (run >= 3) { dead = true; defaults++; cum[t]++; }
+    }
+  }
+  return {miss:Array.from(miss, x => x / SIM_PATHS), cum:Array.from(cum, x => x / SIM_PATHS), pcf:defaults / SIM_PATHS};
+}
+
+const PRESETS = [
+  {name:'Steady retailer', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:450000, growth:12, season:15, cv:12, peak:2, hijri:false, margin:14, age:6, top:8, payer:'individuals', pos:75, inflowDay:5, largest:12, related:0, emi:15000, drawings:20, bounces:0, missed:0, negDays:0, cov:1.02, lag:0, onTime:100, vatYears:2, vatGrowth:10, match:92, edited:false, mismatch:false, circular:0, spikes:false, pass:25, linked:false, security:'pg', requested:600000}},
+  {name:'Seasonal contractor', v:{sector:'contracting', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:900000, growth:8, season:45, cv:25, peak:10, hijri:false, margin:11, age:4, top:45, payer:'government', pos:0, inflowDay:26, largest:35, related:5, emi:20000, drawings:25, bounces:1, missed:0, negDays:6, cov:0.66, lag:90, onTime:100, vatYears:2, vatGrowth:6, match:88, edited:false, mismatch:false, circular:0, spikes:false, pass:30, linked:false, security:'kafalah', requested:1500000}},
+  {name:'Young, not VAT-registered', v:{sector:'food', months:8, vatStatus:'none', cfs:false, source:'scan', turnover:28000, growth:25, season:10, cv:18, peak:8, hijri:false, margin:18, age:1.5, top:30, payer:'individuals', pos:40, inflowDay:1, largest:25, related:0, emi:0, drawings:30, bounces:0, missed:0, negDays:2, cov:1, lag:0, onTime:100, vatYears:1, vatGrowth:0, match:0, edited:false, mismatch:false, circular:0, spikes:false, pass:20, linked:false, security:'none', requested:100000}},
+  {name:'Red flags', v:{sector:'wholesale', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:600000, growth:50, season:10, cv:30, peak:5, hijri:false, margin:25, age:2, top:70, payer:'sme', pos:0, inflowDay:28, largest:65, related:15, emi:20000, drawings:40, bounces:2, missed:1, negDays:5, cov:1.9, lag:0, onTime:60, vatYears:2, vatGrowth:5, match:55, edited:false, mismatch:false, circular:22, spikes:true, pass:82, linked:true, security:'none', requested:1000000}},
+  {name:'Ramadan restaurant', v:{sector:'food', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:350000, growth:10, season:40, cv:15, peak:1, hijri:true, margin:16, age:5, top:5, payer:'individuals', pos:85, inflowDay:3, largest:8, related:0, emi:10000, drawings:30, bounces:0, missed:0, negDays:0, cov:1.0, lag:0, onTime:100, vatYears:2, vatGrowth:9, match:90, edited:false, mismatch:false, circular:0, spikes:false, pass:20, linked:false, security:'pg', requested:400000}},
+  {name:'Large services firm', v:{sector:'services', months:12, vatStatus:'returns', cfs:true, source:'ob', turnover:2200000, growth:15, season:5, cv:10, peak:11, hijri:false, margin:28, age:9, top:25, payer:'corporate', pos:0, inflowDay:25, largest:20, related:0, emi:50000, drawings:30, bounces:0, missed:0, negDays:0, cov:1.05, lag:60, onTime:100, vatYears:2, vatGrowth:14, match:95, edited:false, mismatch:false, circular:0, spikes:false, pass:15, linked:false, security:'collateral', requested:3000000}},
+  {name:'Volatile online seller', v:{sector:'retail', months:12, vatStatus:'returns', cfs:false, source:'pdf', turnover:180000, growth:35, season:30, cv:55, peak:10, hijri:false, margin:13, age:2.5, top:3, payer:'individuals', pos:0, inflowDay:15, largest:10, related:0, emi:3000, drawings:20, bounces:1, missed:0, negDays:4, cov:1.1, lag:0, onTime:95, vatYears:1, vatGrowth:0, match:85, edited:false, mismatch:false, circular:0, spikes:false, pass:40, linked:false, security:'none', requested:300000}},
+  {name:'Over-stretched borrower', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:300000, growth:-15, season:20, cv:25, peak:7, hijri:false, margin:9, age:4, top:20, payer:'individuals', pos:60, inflowDay:10, largest:15, related:0, emi:70000, drawings:40, bounces:5, missed:2, negDays:38, cov:0.95, lag:0, onTime:70, vatYears:2, vatGrowth:-12, match:85, edited:false, mismatch:false, circular:0, spikes:false, pass:35, linked:false, security:'none', requested:500000}},
+  {name:'Edited statement', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:450000, growth:12, season:15, cv:12, peak:2, hijri:false, margin:14, age:6, top:8, payer:'individuals', pos:75, inflowDay:5, largest:12, related:0, emi:15000, drawings:20, bounces:0, missed:0, negDays:0, cov:1.02, lag:0, onTime:100, vatYears:2, vatGrowth:10, match:92, edited:true, mismatch:false, circular:0, spikes:false, pass:25, linked:false, security:'pg', requested:600000}}
+];
+const S = Object.assign({}, PRESETS[0].v);
+let activePreset = 0;
+
+const sign = v => v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0';
+const CONTROLS = [
+  {group:'Trading', open:true, items:[
+    {k:'sector', label:'Sector', type:'select', options:Object.keys(SECTORS).map(k => [k, SECTORS[k].name]), help:'Sets the sector priors for credibility weighting (Z1)'},
+    {k:'turnover', label:'Monthly credits on the statements', type:'log', min:10000, max:3000000, fmt:fmtSAR, help:'Before cleaning out non-trading credits (R1)'},
+    {k:'growth', label:'Turnover growth over 12 months', min:-40, max:60, step:1, fmt:v => sign(v) + '%', help:'R3'},
+    {k:'season', label:'Seasonal swing', min:0, max:60, step:1, fmt:v => '±' + v + '%', help:'Peak month against the average (R4)'},
+    {k:'cv', label:'Month-to-month variability', min:5, max:60, step:1, fmt:v => v + '%', help:'h. Drives the cash-flow simulation (C9)'},
+    {k:'peak', label:'Peak month', type:'select', num:true, options:MONTHS.map((m, i) => [i, m])},
+    {k:'hijri', label:'Peak follows Ramadan and Eid (Hijri)', type:'toggle', help:'R12, off by default. The peak moves about 11 days earlier each year'},
+    {k:'margin', label:'Cash operating margin', min:2, max:40, step:1, fmt:v => v + '%', help:'Before owner drawings (M2)'},
+    {k:'age', label:'Years trading', min:0.5, max:15, step:0.5, fmt:v => v + (v === 1 ? ' year' : ' years')},
+    {k:'top', label:'Largest payer’s share of sales', min:2, max:100, step:1, fmt:v => v + '%', help:'R5'},
+    {k:'payer', label:'Main payer type', type:'select', options:Object.keys(PAYERS).map(k => [k, PAYERS[k].name]), help:'R10. Government and corporates can pay late; SMEs can fail'},
+    {k:'pos', label:'Card (POS) share of sales', min:0, max:100, step:5, fmt:v => v + '%', help:'60% or more allows split settlement (S5)'},
+    {k:'inflowDay', label:'Main inflow day of the month', min:1, max:28, step:1, fmt:v => 'Day ' + v, help:'Sets the instalment day (S1)'},
+    {k:'largest', label:'Largest single credit, share of its month', min:5, max:90, step:1, fmt:v => v + '%', help:'C8. Above 40%, the excess is treated as one-off'},
+    {k:'related', label:'Receipts from related companies, share of credits', min:0, max:40, step:1, fmt:v => v + '%', help:'R11. Removed from turnover like owner injections'}
+  ]},
+  {group:'Obligations and conduct', items:[
+    {k:'emi', label:'Existing monthly instalments', min:0, max:200000, step:1000, fmt:fmtSAR, help:'d'},
+    {k:'drawings', label:'Owner drawings, share of cash profit', min:0, max:100, step:5, fmt:v => v + '%', help:'B5'},
+    {k:'bounces', label:'Returned or bounced payments, 12 months', min:0, max:8, step:1, fmt:String, help:'B1. Four or more declines'},
+    {k:'missed', label:'Late or missed instalments, 12 months', min:0, max:6, step:1, fmt:String, help:'B2. Three or more declines'},
+    {k:'negDays', label:'Days below zero balance', min:0, max:60, step:1, fmt:String, help:'C6. Over 30 declines'}
+  ]},
+  {group:'Documents', items:[
+    {k:'months', label:'Months of statements', min:3, max:12, step:1, fmt:v => v + ' months'},
+    {k:'vatStatus', label:'VAT status', type:'select', options:[['returns','Registered, returns provided'],['noreturns','Registered, returns missing'],['none','Not registered']]},
+    {k:'cfs', label:'Cash flow statement provided', type:'toggle'},
+    {k:'source', label:'How statements arrive', type:'select', options:[['pdf','Native PDF from the bank'],['scan','Scanned image'],['ob','Open-banking feed']]}
+  ]},
+  {group:'VAT', items:[
+    {k:'cov', label:'Statement credits ÷ VAT-declared sales', min:0.3, max:2.2, step:0.01, fmt:v => Number(v).toFixed(2), help:'R2. Box 1 grossed up at 15%; 0.7 to 1.3 is normal before the lag adjustment', dep:'returns'},
+    {k:'lag', label:'Collection lag', min:0, max:120, step:5, fmt:v => v + ' days', help:'V10. Shifts VAT sales by the lag and widens the band', dep:'returns'},
+    {k:'onTime', label:'Returns filed and paid on time', min:0, max:100, step:5, fmt:v => v + '%', help:'V1, B3', dep:'registered'},
+    {k:'vatYears', label:'VAT returns provided', type:'select', num:true, dep:'returns', options:[[2,'Last 2 years (8 quarters)'],[1,'Last year only (4 quarters)']]},
+    {k:'vatGrowth', label:'VAT sales growth, year on year', min:-40, max:60, step:1, fmt:v => sign(v) + '%', help:'V8. More than 25 points away from statement growth flags', dep:'yoy'},
+    {k:'match', label:'VAT items traced to statement categories', min:0, max:100, step:5, fmt:v => v + '%', help:'V9. Under 75% flags', dep:'returns'}
+  ]},
+  {group:'Fraud signals', items:[
+    {k:'edited', label:'File edited after the bank issued it', type:'toggle', help:'F1, hard fail'},
+    {k:'mismatch', label:'Account name differs from the VAT certificate', type:'toggle', help:'F3, hard fail'},
+    {k:'circular', label:'Circular flows, share of credits', min:0, max:40, step:1, fmt:v => v + '%', help:'F6. Over 10% flags; always removed from turnover'},
+    {k:'spikes', label:'Balance spikes at month-end', type:'toggle', help:'F7'},
+    {k:'pass', label:'Credits leaving within 48 hours', min:0, max:100, step:5, fmt:v => v + '%', help:'F8. Over 70% flags'},
+    {k:'linked', label:'Shares an owner, IBAN or address with another applicant', type:'toggle', help:'F13, soft flag'}
+  ]},
+  {group:'Request and security', items:[
+    {k:'security', label:'Security offered', type:'select', options:Object.keys(SECURITY).map(k => [k, SECURITY[k][0]]), help:'L1. Sets the loss given default'},
+    {k:'requested', label:'Amount requested', type:'log', min:20000, max:5000000, fmt:fmtSAR}
+  ]}
+];
+const ctlByKey = {};
+CONTROLS.forEach(g => g.items.forEach(c => { ctlByKey[c.k] = c; }));
+
+function niceRound(v){ return v < 100000 ? Math.round(v / 1000) * 1000 : v < 1000000 ? Math.round(v / 5000) * 5000 : Math.round(v / 10000) * 10000; }
+const logToVal = (c, x) => niceRound(c.min * Math.pow(c.max / c.min, x / 1000));
+const valToLog = (c, v) => Math.round(1000 * Math.log(v / c.min) / Math.log(c.max / c.min));
+
+function buildControls(){
+  const wrap = $('#controls');
+  let h = '';
+  CONTROLS.forEach(g => {
+    h += '<details class="group"' + (g.open ? ' open' : '') + '><summary>' + g.group + '</summary>';
+    g.items.forEach(c => {
+      const id = 'c-' + c.k;
+      h += '<div class="ctl" data-k="' + c.k + '">';
+      if (c.type === 'toggle') {
+        h += '<label class="switch" for="' + id + '"><input type="checkbox" id="' + id + '"><span class="tr"></span><span>' + c.label + '</span></label>';
+      } else if (c.type === 'select') {
+        h += '<label class="row" for="' + id + '"><span>' + c.label + '</span></label><select id="' + id + '">' + c.options.map(o => '<option value="' + o[0] + '">' + o[1] + '</option>').join('') + '</select>';
+      } else if (c.type === 'log') {
+        h += '<div class="row"><label for="' + id + '">' + c.label + '</label><output id="o-' + c.k + '"></output></div><input type="range" id="' + id + '" min="0" max="1000" step="1">';
+      } else {
+        h += '<div class="row"><label for="' + id + '">' + c.label + '</label><output id="o-' + c.k + '"></output></div><input type="range" id="' + id + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '">';
+      }
+      if (c.help) h += '<div class="help">' + c.help + '</div>';
+      h += '</div>';
+    });
+    h += '</details>';
+  });
+  wrap.innerHTML = h;
+  CONTROLS.forEach(g => g.items.forEach(c => {
+    const el = $('#c-' + c.k);
+    const ev = c.type === 'toggle' || c.type === 'select' ? 'change' : 'input';
+    el.addEventListener(ev, () => {
+      if (c.type === 'toggle') S[c.k] = el.checked;
+      else if (c.type === 'select') S[c.k] = c.num ? Number(el.value) : el.value;
+      else if (c.type === 'log') S[c.k] = logToVal(c, Number(el.value));
+      else S[c.k] = Number(el.value);
+      activePreset = -1;
+      syncOutputs(); renderPresets(); render();
+    });
+  }));
+}
+function syncControls(){
+  Object.values(ctlByKey).forEach(c => {
+    const el = $('#c-' + c.k);
+    if (c.type === 'toggle') el.checked = !!S[c.k];
+    else if (c.type === 'log') el.value = valToLog(c, S[c.k]);
+    else el.value = S[c.k];
+  });
+  syncOutputs();
+}
+function syncOutputs(){
+  Object.values(ctlByKey).forEach(c => {
+    const o = $('#o-' + c.k);
+    if (o) o.textContent = c.fmt(S[c.k]);
+    const box = $('.ctl[data-k="' + c.k + '"]');
+    let off = false;
+    if (c.dep === 'returns') off = S.vatStatus !== 'returns';
+    if (c.dep === 'registered') off = S.vatStatus === 'none';
+    if (c.dep === 'yoy') off = S.vatStatus !== 'returns' || S.vatYears !== 2;
+    box.classList.toggle('off', off);
+    const inp = $('#c-' + c.k); inp.disabled = off;
+  });
+}
+function renderPresets(){
+  const p = $('#presets');
+  p.innerHTML = '<p class="lbl">Start from a sample applicant, then change anything below.</p>' + PRESETS.map((x, i) => '<button type="button" class="preset" data-i="' + i + '" aria-pressed="' + (i === activePreset) + '">' + x.name + '</button>').join('') + (activePreset === -1 ? '<button type="button" class="preset" aria-pressed="true" disabled>Your changes</button>' : '');
+}
+$('#presets').addEventListener('click', e => {
+  const b = e.target.closest('[data-i]');
+  if (!b) return;
+  activePreset = Number(b.dataset.i);
+  Object.assign(S, PRESETS[activePreset].v);
+  syncControls(); renderPresets(); render();
+});
+
+function compute(s){
+  const sec = SECTORS[s.sector] || SECTORS.retail, payer = PAYERS[s.payer] || PAYERS.individuals;
+  const circ = s.circular / 100, rel = s.related / 100, T0 = s.turnover;
+  const big = s.largest / 100, oneOff = big > 0.4 ? (big - 0.4) * T0 / 12 : 0;
+  const T = Math.max(1, T0 * (1 - circ - rel) - oneOff);
+  const d = s.drawings / 100;
+  const registered = s.vatStatus !== 'none', returns = s.vatStatus === 'returns';
+  const yoy = returns && s.vatYears === 2;
+
+  // Z1 credibility weighting
+  const Zm = s.months / (s.months + CRED_K), nG = s.months + (yoy ? 12 : 0), Zg = nG / (nG + CRED_K), Zs = s.months >= 12 ? Zm : 0;
+  const gOwn = yoy ? Math.min(s.growth, s.vatGrowth) : s.growth;
+  const cred = [
+    {k:'g', name:'Growth', own:gOwn, prior:sec.g, Z:Zg, f:v => (v > 0.05 ? '+' : v < -0.05 ? '−' : '') + Math.abs(v).toFixed(1) + '%'},
+    {k:'sw', name:'Seasonal swing', own:s.season, prior:sec.sw, Z:Zs, f:v => '±' + v.toFixed(1) + '%'},
+    {k:'m', name:'Cash margin', own:s.margin, prior:sec.m, Z:Zm, f:v => v.toFixed(1) + '%'},
+    {k:'cv', name:'Variability', own:s.cv, prior:sec.cv, Z:Zm, f:v => v.toFixed(1) + '%'}
+  ];
+  const U = {};
+  cred.forEach(c => { c.used = c.Z * c.own + (1 - c.Z) * c.prior; U[c.k] = c.used; });
+  const g = U.g / 100, sw = U.sw / 100, m = U.m / 100, cv = U.cv / 100;
+
+  const keep = 1 - 0.6 * d;
+  const v = 0.8 * (1 - m), Fx = 0.2 * T * (1 - m);
+  const cfAvg = T * m * keep;
+  const cfStress = Math.max(0, T * (0.8 - 0.84 * (1 - m))) * keep;
+  const pMax = Math.min(cfAvg / 1.25, cfStress) - s.emi;
+  const burden = s.emi / T;
+
+  // V10 lag-adjusted coverage (R2 uses Box 1 grossed up only)
+  const L = returns ? s.lag : 0;
+  const covRaw = returns ? s.cov * (1 - circ - rel) : null;
+  const covAdj = returns ? covRaw * Math.pow(1 + g, L / 365) : null;
+  const lo = 0.7 - 0.001 * L, hi = 1.3 + 0.001 * L;
+
+  const fraud = [];
+  fraud.push({code:'F1', name:'File integrity', node:'n_doc', status:s.edited ? 'fail' : 'pass', note:s.edited ? 'Edited after the bank issued it' : s.source === 'ob' ? 'Pulled straight from the bank' : 'No edits found'});
+  fraud.push({code:'F3', name:'Identity match', node:'n_doc', status:s.mismatch ? 'fail' : 'pass', note:s.mismatch ? 'Account name differs from VAT certificate' : 'Names, IBAN and VAT number agree'});
+  fraud.push({code:'F6', name:'Circular flows', node:'n_pat', status:s.circular > 10 ? 'flag' : 'pass', note:s.circular + '% of credits'});
+  fraud.push({code:'F7', name:'Month-end spikes', node:'n_pat', status:s.spikes ? 'flag' : 'pass', note:s.spikes ? 'Balance lifted around month-end' : 'None found'});
+  fraud.push({code:'F8', name:'Pass-through', node:'n_pat', status:s.pass > 70 ? 'flag' : 'pass', note:s.pass + '% leave within 48 hours'});
+  if (returns) {
+    const st = (covAdj < 0.4 || covAdj > 2.0) ? 'fail' : (covAdj < lo || covAdj > hi) ? 'flag' : 'pass';
+    fraud.push({code:'F11', name:'VAT vs statements', node:'n_lag', status:st, note:'Coverage ' + covAdj.toFixed(2) + (L ? ' after the ' + L + '-day lag' : '') + ', band ' + lo.toFixed(2) + ' to ' + hi.toFixed(2)});
+  } else {
+    fraud.push({code:'F11', name:'VAT vs statements', node:'n_lag', status:'skip', note:'No returns to compare'});
+  }
+  if (yoy) fraud.push({code:'V8', name:'Year-on-year VAT', node:'x_yoy', status:Math.abs(s.growth - s.vatGrowth) > 25 ? 'flag' : 'pass', note:'VAT sales ' + sign(s.vatGrowth) + '%, statements ' + sign(s.growth) + '%'});
+  else fraud.push({code:'V8', name:'Year-on-year VAT', node:'x_yoy', status:'skip', note:returns ? 'Only one year of returns' : 'No returns to compare'});
+  fraud.push(returns ? {code:'V9', name:'VAT items vs statements', node:'x_map', status:s.match < 75 ? 'flag' : 'pass', note:s.match + '% of declared value traced'} : {code:'V9', name:'VAT items vs statements', node:'x_map', status:'skip', note:'No returns to compare'});
+  fraud.push({code:'F13', name:'Cross-applicant network', node:'n_net', status:s.linked ? 'flag' : 'pass', note:s.linked ? 'Shares an owner, IBAN or address with another applicant' : 'No links to other applicants'});
+  const hard = fraud.filter(f => f.status === 'fail'), soft = fraud.filter(f => f.status === 'flag');
+
+  const ded = [];
+  if (s.vatStatus === 'noreturns') ded.push([15, 'VAT returns missing', 'Certificate only; request the returns']);
+  if (s.vatStatus === 'none') ded.push([20, 'Not VAT-registered', 'Statements only; VAT checks switched off']);
+  if (returns && s.vatYears !== 2) ded.push([5, 'One year of VAT returns', 'No year-on-year check (V8); request the last 8 quarters']);
+  if (!s.cfs) ded.push([10, 'No cash flow statement', 'Synthetic statement built from categorised lines (t)']);
+  if (s.months < 12) ded.push([2 * (12 - s.months), s.months + ' months of statements', 'Turnover annualised; no seasonal profile']);
+  if (s.source === 'scan') ded.push([10, 'Scanned statements', 'OCR, with stricter F1 and F2 checks']);
+  if (returns && covAdj < lo) ded.push([15, 'Possible undisclosed account', 'Coverage under the band even after the lag (R2, V10); request other statements']);
+  if (soft.length) ded.push([5 * soft.length, soft.length + ' soft flag' + (soft.length > 1 ? 's' : ''), soft.map(f => f.code).join(', ')]);
+  const conf = Math.max(0, 100 - ded.reduce((a, x) => a + x[0], 0));
+  const kappa = conf / 100;
+
+  const sc = {};
+  sc.cap = 100 * (0.8 * clamp((pMax / T) / 0.06) + 0.2 * clamp(1 - s.negDays / 30));
+  sc.rev = clamp(100 * (0.30 * clamp((U.g + 20) / 50) + 0.30 * clamp(1 - (s.top - 15) / 60) + 0.20 * clamp(1 - sw / 0.6) + 0.20 * clamp(1 - (cv - 0.10) / 0.40)) + payer.adj, 0, 100);
+  sc.con = clamp(100 - 14 * s.bounces - 18 * s.missed - (registered ? 0.35 * (100 - s.onTime) : 0) - (d > 0.5 ? (d - 0.5) * 60 : 0), 0, 100);
+  sc.mar = 100 * clamp((m - 0.02) / 0.18);
+  sc.vat = s.vatStatus === 'none' ? 35 : s.vatStatus === 'noreturns' ? 40 : 100 * (0.5 * clamp(1 - Math.max(0, Math.abs(covAdj - 1) - (0.1 + 0.001 * L)) / 0.5) + 0.3 * s.onTime / 100 + 0.2 * s.match / 100);
+  sc.pro = 100 * (0.75 * clamp((s.age - 1) / 5) + 0.25 * Math.min(s.months, 12) / 12);
+  const score = Math.round(10 * WEIGHTS.reduce((a, w) => a + w[2] * sc[w[0]], 0));
+  let grade = score >= 800 ? 'A' : score >= 700 ? 'B' : score >= 600 ? 'C' : score >= 500 ? 'D' : 'E';
+  let ageCap = false;
+  if (s.age < 2 && (grade === 'A' || grade === 'B')) { grade = 'C'; ageCap = true; }
+  const pd = 1 / (1 + Math.exp(2.2 + (score - 550) / 125));
+
+  const knock = [];
+  if (s.months < 6) knock.push(['Data', 'Fewer than 6 months of statements', 'n_conf']);
+  if (s.bounces >= 4) knock.push(['B1', s.bounces + ' returned or bounced payments in 12 months', 'n_cond']);
+  if (s.missed >= 3) knock.push(['B2', s.missed + ' late or missed instalments in 12 months', 'n_cond']);
+  if (s.negDays > 30) knock.push(['C6', s.negDays + ' days below zero', 'n_od']);
+  if (burden > 0.35) knock.push(['C4', 'Existing instalments take ' + pct(burden) + ' of turnover', 'n_dscr']);
+  if (s.age < 1) knock.push(['Policy', 'Under one year trading', 'o_elig']);
+  if (pMax <= 0) knock.push(['C3', 'No room for a new instalment once turnover falls 20%', 'n_dscr']);
+
+  let offer = null;
+  if (!hard.length && !knock.length && grade !== 'E') {
+    const G = GRADES[grade], lgd = SECURITY[s.security] ? SECURITY[s.security][1] : 0.65;
+    let nMax = G.n;
+    if (s.months < 12) nMax = Math.min(nMax, 12);
+    nMax = Math.min(nMax, Math.max(6, Math.floor(s.age * 12 / 6) * 6));
+    const start = (new Date().getMonth() + 1) % 12;
+    const simBase = {T, g, sw, cv, m, keep, emi:s.emi, peak:s.peak, hijri:s.hijri, payer, top:s.top / 100, surplus:Math.max(0, cfAvg - s.emi)};
+    simBase.cf = buildCF(simBase, start);
+    const seasonalOn = s.months >= 12 && sw >= 0.1;
+    const sizeAt = rate => {
+      const r = rate / 12, ann = n => (1 - Math.pow(1 + r, -n)) / r, inst = (A, n) => A * r / (1 - Math.pow(1 + r, -n));
+      const limits = [
+        {key:'cap', label:'What cash flow can service', code:'C2, C3', node:'n_dscr', v:Math.max(0, pMax * ann(nMax))},
+        {key:'turn', label:'Grade ' + grade + ' share of turnover (' + Math.round(G.k * 100) + '%)', code:'R1', node:'n_true', v:G.k * T * 12},
+        {key:'pol', label:'Policy cap', code:'Policy', node:'o_amt', v:POLICY_CAP},
+        {key:'req', label:'Amount requested', code:'Request', node:'o_amt', v:s.requested}
+      ];
+      const raw = Math.min.apply(null, limits.map(l => l.v)), bind = limits.find(l => l.v === raw);
+      const amount0 = Math.floor(raw * kappa / 1000) * 1000;
+      if (amount0 < MIN_FACILITY) return {fail:'min', amount0};
+      const plan = (A, n) => {
+        const P = inst(A, n), months = Array.from({length:n}, (_, i) => (start + i) % 12);
+        let pays;
+        if (seasonalOn) {
+          const w = months.map((mo, i) => Math.sqrt(Math.max(0.05, seasonF(mo, i, s.peak, sw, s.hijri))));
+          const mean = w.reduce((a, b) => a + b, 0) / w.length;
+          pays = w.map(x => P * x / mean);
+        } else pays = months.map(() => P);
+        return {n, P, months, pays};
+      };
+      const opts = [6, 12, 18, 24, 36].filter(n => n <= nMax);
+      const feasible = opts.filter(n => inst(amount0, n) <= pMax + 0.5);
+      const cand = feasible.length ? feasible : [nMax];
+      let chosen = null, sim = null, amount = amount0, cutBySim = false;
+      for (const n of cand) {
+        const pl = plan(amount0, n), sr = simulate(simBase, pl.pays, pl.P);
+        if (sr.pcf <= SIM_TARGET) { chosen = pl; sim = sr; break; }
+      }
+      const lengthened = !!chosen && chosen.n !== cand[0];
+      if (!chosen) {
+        const n = cand[cand.length - 1];
+        let a = 0, b = 1;
+        for (let i = 0; i < 9; i++) {
+          const mid = (a + b) / 2, pl = plan(amount0 * mid, n);
+          if (simulate(simBase, pl.pays, pl.P).pcf <= SIM_TARGET) a = mid; else b = mid;
+        }
+        amount = Math.floor(amount0 * a / 1000) * 1000;
+        cutBySim = true;
+        if (amount < MIN_FACILITY) return {fail:'sim', amount0};
+        chosen = plan(amount, n);
+        sim = simulate(simBase, chosen.pays, chosen.P);
+      }
+      // C11 PD over the tenor, L1 to L5 loss and pricing
+      const h = 1 - Math.pow(1 - pd, 1 / 12);
+      const mbar = sim.miss.reduce((a, b) => a + b, 0) / sim.miss.length;
+      let w = sim.miss.map(x => mbar > 0 ? 0.5 + 0.5 * x / mbar : 1);
+      const wm = w.reduce((a, b) => a + b, 0) / w.length;
+      w = w.map(x => x / wm);
+      let surv = 1, prev = 0, O = amount, EL = 0, expo = 0;
+      const cumPD = [];
+      for (let t = 0; t < chosen.n; t++) {
+        surv *= 1 - Math.min(0.99, h * w[t]);
+        const c = 1 - surv;
+        cumPD.push(c);
+        EL += (c - prev) * lgd * O;
+        expo += O;
+        O = Math.max(0, O * (1 + r) - chosen.pays[t]);
+        prev = c;
+      }
+      const ELrate = expo > 0 ? EL / (expo / 12) : 0, capCharge = PRICE.capital * PRICE.hurdle;
+      const build = PRICE.funds + ELrate + capCharge + PRICE.ops;
+      let req = Math.ceil(build * 400 - 1e-9) / 400;
+      const capped = req > PRICE.cap;
+      if (capped) req = PRICE.cap;
+      const P = chosen.P;
+      return {amount, amount0, n:chosen.n, nMax, P, pays:chosen.pays, months:chosen.months, sim, cumPD, pdLife:cumPD[cumPD.length - 1],
+        limits, bind, raw, rate, r, seasonal:seasonalOn, cutBySim, lengthened, lgd, EL, ELrate, capCharge, build, reqRate:req, capped,
+        raroc:(rate - PRICE.funds - PRICE.ops - ELrate) / PRICE.capital,
+        day:((s.inflowDay + 3 - 1) % 28) + 1, split:s.pos >= 60 ? P / (T * s.pos / 100) : null, dscrNew:cfAvg / (s.emi + P)};
+    };
+    let rate = G.rate, res = null;
+    for (let it = 0; it < 4; it++) {
+      res = sizeAt(rate);
+      if (res.fail) break;
+      if (Math.abs(res.reqRate - rate) < 1e-9) break;
+      rate = res.reqRate;
+    }
+    if (res.fail === 'min') knock.push(['Policy', 'Offer would be ' + fmtSAR(res.amount0) + ', under the SAR 10,000 minimum', 'o_amt']);
+    else if (res.fail === 'sim') knock.push(['C9', 'Even the minimum facility would carry over a 5% chance of 90+ days past due', 'n_sim']);
+    else offer = res;
+  }
+  const Pst = offer ? offer.P : 0;
+  const revStress = clamp(1 - ((Pst + s.emi) / keep + Fx) / (T * (1 - v)));
+
+  let decision, tone;
+  if (hard.length || knock.length || grade === 'E') { decision = 'Decline'; tone = 'bad'; }
+  else if (soft.length >= 2 || grade === 'D' || conf < 60 || (offer && offer.capped)) { decision = 'Manual review'; tone = 'warn'; }
+  else { decision = 'Approve'; tone = 'good'; }
+
+  const reasons = [];
+  hard.forEach(f => reasons.push({tone:'bad', code:f.code, node:f.node, text:f.name + ': ' + f.note.charAt(0).toLowerCase() + f.note.slice(1)}));
+  knock.forEach(k => reasons.push({tone:'bad', code:k[0], node:k[2], text:k[1]}));
+  if (grade === 'E' && !hard.length) reasons.push({tone:'bad', code:'Score', node:'o_grade', text:'Score ' + score + ' is under 500'});
+  if (soft.length >= 2) reasons.push({tone:'warn', code:soft.map(f => f.code).join(', '), node:'n_pat', text:soft.length + ' soft flags need an underwriter’s look'});
+  else if (soft.length === 1) reasons.push({tone:'info', code:soft[0].code, node:soft[0].node, text:'One soft flag: ' + soft[0].name.toLowerCase() + ', noted but not blocking'});
+  if (grade === 'D' && !hard.length && !knock.length) reasons.push({tone:'warn', code:'Score', node:'o_grade', text:'Grade D (score ' + score + ') goes to an underwriter'});
+  if (conf < 60) reasons.push({tone:'warn', code:'Data', node:'n_conf', text:'Data confidence ' + conf + '%, under the 60% line'});
+  if (ageCap) reasons.push({tone:'warn', code:'Policy', node:'o_grade', text:'Under 2 years trading caps the grade at C (score ' + score + ')'});
+  if (offer && offer.capped) reasons.push({tone:'warn', code:'L4', node:'n_loss', text:'Risk can’t be priced within the 20% ceiling; return on capital falls short of the hurdle'});
+  if (circ > 0) reasons.push({tone:'info', code:'R1', node:'n_true', text:fmtSAR(T0 * circ) + ' a month of circular credits removed from turnover'});
+  if (rel > 0) reasons.push({tone:'info', code:'R11', node:'n_rel', text:fmtSAR(T0 * rel) + ' a month from related companies removed from turnover'});
+  if (oneOff > 0) reasons.push({tone:'info', code:'C8', node:'x_ext', text:'One receipt is ' + s.largest + '% of its month; ' + fmtSAR(oneOff * 12) + ' a year treated as one-off'});
+  if (returns && L > 0 && (covRaw < 0.7 || covRaw > 1.3) && covAdj >= lo && covAdj <= hi) reasons.push({tone:'info', code:'V10', node:'n_lag', text:'Coverage ' + covRaw.toFixed(2) + ' would have flagged; inside the band once the ' + L + '-day collection lag is allowed for'});
+  if (Zm < 0.7) reasons.push({tone:'info', code:'Z1', node:'n_cred', text:'Short history: own figures weighted ' + Math.round(Zm * 100) + '% against the ' + sec.name.toLowerCase() + ' sector'});
+  if (offer) {
+    const bt = {cap:'Cash flow capacity', turn:'The grade’s turnover cap', pol:'The policy cap', req:'The amount requested'}[offer.bind.key];
+    reasons.push({tone:'info', code:offer.bind.code, node:offer.bind.node, text:bt + ' sets the amount'});
+    if (kappa < 1 && conf >= 60) reasons.push({tone:'info', code:'Data', node:'n_conf', text:'Cut to ' + conf + '% for data confidence'});
+    if (offer.cutBySim) reasons.push({tone:'info', code:'C9', node:'n_sim', text:'Cut further so the simulated chance of 90+ days past due stays under 5%'});
+    if (offer.lengthened) reasons.push({tone:'info', code:'C9', node:'n_sim', text:'Tenor lengthened to ' + offer.n + ' months to keep the simulated shortfall chance under 5%'});
+    if (offer.seasonal) reasons.push({tone:'info', code:s.hijri ? 'R12' : 'S2', node:s.hijri ? 'n_hijri' : 'n_sch', text:s.hijri ? 'Instalments follow the Hijri peak, moving about 11 days earlier each year' : 'Instalments follow the seasons, highest around ' + MONTHS[s.peak]});
+    if (offer.split) reasons.push({tone:'info', code:'S5', node:'n_sch', text:'Can repay as ' + (offer.split * 100).toFixed(1) + '% of daily card sales'});
+  }
+  return {T0, T, circ, rel, oneOff, yoy, m, sec, payer, cred, L, covRaw, covAdj, lo, hi, cfAvg, cfStress, pMax, burden, revStress, returns, registered, fraud, hard, soft, ded, conf, kappa, sc, score, grade, ageCap, pd, knock, offer, decision, tone, reasons};
+}
+
+const pctR = x => (x * 100).toFixed(2).replace(/\.?0+$/, '') + '%';
+function riskChart(o){
+  const n = o.n, W = 600, H = 176, l = 44, rg = 8, t = 10, b = 26, iw = W - l - rg, ih = H - t - b;
+  const top = Math.max(o.pdLife, Math.max.apply(null, o.sim.miss), 0.005) * 1.1;
+  const ymax = [0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1].find(x => x >= top) || 1;
+  const y = v => t + ih * (1 - v / ymax), slot = iw / n, bw = Math.max(2, slot * 0.7);
+  let g = '';
+  [0, ymax / 2, ymax].forEach(v => { g += '<line x1="' + l + '" x2="' + (W - rg) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="var(--rule)" stroke-width="1"/><text x="' + (l - 6) + '" y="' + (y(v) + 4).toFixed(1) + '" text-anchor="end">' + pctR(v) + '</text>'; });
+  o.sim.miss.forEach((v, i) => { g += '<rect x="' + (l + i * slot + (slot - bw) / 2).toFixed(1) + '" y="' + y(v).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (ih - (y(v) - t)).toFixed(1) + '" fill="var(--bank)" opacity="0.4"><title>' + MONTHS[o.months[i]] + ': ' + pctR(v) + ' chance this instalment is missed</title></rect>'; });
+  g += '<path d="' + o.cumPD.map((v, i) => (i ? 'L' : 'M') + (l + i * slot + slot / 2).toFixed(1) + ' ' + y(v).toFixed(1)).join('') + '" fill="none" stroke="var(--ink)" stroke-width="2"/>';
+  const every = n <= 12 ? 2 : n <= 24 ? 3 : 6;
+  o.months.forEach((mo, i) => { if (i % every === 0) g += '<text x="' + (l + i * slot + slot / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + MONTHS[mo] + '</text>'; });
+  return '<svg class="rchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Chance each instalment is missed, and cumulative probability of default reaching ' + pctR(o.pdLife) + ' over ' + n + ' months">' + g + '</svg>';
+}
+
+function render(){
+  const R = compute(S);
+  const o = R.offer;
+  let v = '<p class="v-state">' + R.decision + '</p>';
+  if (o && R.decision !== 'Decline') {
+    v += '<p class="v-sum">' + fmtSAR(o.amount) + ' over ' + o.n + ' months at ' + pctR(o.rate) + ' a year, about ' + fmtSAR(o.P) + ' a month</p>';
+    v += '<p class="v-note">' + (R.decision === 'Manual review' ? 'Indicative offer, subject to an underwriter. ' : '') + 'Grade ' + R.grade + ', instalment on day ' + o.day + ' of each month.</p>';
+  } else {
+    v += '<p class="v-sum">No offer</p><p class="v-note">The reasons below name the analysis that stopped it.</p>';
+  }
+  v += '<ul class="reasons">' + R.reasons.map(x => '<li><button type="button" class="code ' + (x.tone === 'bad' ? 'bad' : x.tone === 'warn' ? 'warn' : '') + '" data-node="' + x.node + '" title="Show on the map">' + x.code + '</button><span>' + x.text + '</span></li>').join('') + '</ul>';
+  const vd = $('#verdict');
+  vd.className = 'verdict ' + R.tone;
+  vd.innerHTML = v;
+
+  let p = '';
+  if (o) {
+    const scaleMax = Math.max.apply(null, o.limits.filter(l => l.key !== 'pol').map(l => l.v));
+    p += '<section class="panel span2"><h3>How the amount is set</h3><p class="sub">The lowest of four limits wins, then data confidence and the cash-flow simulation can cut it. Capacity is priced at the risk-based rate of ' + pctR(o.rate) + '.</p><div class="bars">';
+    o.limits.forEach(l => {
+      const over = l.v > scaleMax * 1.02, w = over ? 100 : clamp(l.v / scaleMax) * 100;
+      p += '<div class="bar' + (l === o.bind ? ' bind' : '') + (over ? ' over' : '') + '"><span class="nm"><button type="button" data-node="' + l.node + '">' + l.label + '</button></span><span class="val">' + fmtSAR(l.v) + '</span><div class="track"><div class="fill" style="width:' + w.toFixed(1) + '%"></div></div></div>';
+    });
+    p += '</div><p class="sizing-line">Lowest limit ' + fmtSAR(o.raw) + ' × data confidence ' + R.kappa.toFixed(2) + ' = ' + (o.cutBySim ? fmtSAR(o.amount0) : '<b>' + fmtSAR(o.amount) + '</b>') + '</p>';
+    if (o.cutBySim) p += '<p class="sizing-line">Cut to <b>' + fmtSAR(o.amount) + '</b> so the simulated chance of 90+ days past due stays under 5% (C9)</p>';
+    p += '</section>';
+  }
+  p += '<section class="panel"><h3>Score and grade</h3><div><span class="big">' + R.score + '</span><span class="gradepill">' + R.grade + '</span></div><dl class="kv"><dt>12-month PD (90+ days past due)</dt><dd>' + pct(R.pd, 1) + '</dd>' + (o ? '<dt>Lifetime PD over ' + o.n + ' months (C11)</dt><dd>' + pct(o.pdLife, 1) + '</dd>' : '') + (R.ageCap ? '<dt>Grade capped</dt><dd>Under 2 years</dd>' : '') + '</dl></section>';
+  p += '<section class="panel"><h3>What drove the score</h3><div class="bars">';
+  WEIGHTS.forEach(w => {
+    const sv = R.sc[w[0]];
+    p += '<div class="bar"><span class="nm"><button type="button" data-node="' + w[3] + '">' + w[1] + '</button> <span style="color:var(--muted)">' + Math.round(w[2] * 100) + '%</span></span><span class="val">' + Math.round(w[2] * sv * 10) + ' pts</span><div class="track"><div class="fill" style="width:' + clamp(sv / 100) * 100 + '%"></div></div></div>';
+  });
+  p += '</div></section>';
+  if (o) {
+    p += '<section class="panel span2"><h3>Risk over the term</h3><p class="sub">From ' + SIM_PATHS + ' simulated cash-flow paths. Default means three missed instalments in a row (90+ days past due).</p>' + riskChart(o);
+    p += '<div class="rk"><span><i style="background:var(--bank);opacity:.4"></i>Chance each instalment is missed (C9)</span><span><i style="background:var(--ink);height:3px"></i>Cumulative probability of default (C11)</span></div>';
+    p += '<dl class="kv"><dt>Chance of 90+ days past due from cash flow alone (C9)</dt><dd>' + pct(o.sim.pcf, 1) + '</dd><dt>Lifetime PD over ' + o.n + ' months (C11)</dt><dd>' + pct(o.pdLife, 1) + '</dd><dt>Turnover can fall before cover breaks (C10)</dt><dd>' + pct(R.revStress) + '</dd></dl></section>';
+    const mx = Math.max.apply(null, o.pays), every = o.n <= 12 ? 1 : 3;
+    p += '<section class="panel span2"><h3>Repayment schedule</h3><p class="sub">' + o.n + ' months from ' + MONTHS[o.months[0]] + ', day ' + o.day + ' (3 days after the main inflows). ' + (o.seasonal ? (S.hijri ? 'Seasonal profile following the Hijri peak (R12).' : 'Seasonal profile (S2).') : 'Flat instalments.') + (o.split ? ' Or ' + (o.split * 100).toFixed(1) + '% of daily card sales (S5).' : '') + '</p>';
+    p += '<div class="sched" role="img" aria-label="Monthly instalments from ' + fmtSAR(Math.min.apply(null, o.pays)) + ' to ' + fmtSAR(mx) + '">' + o.pays.map(x => '<i style="height:' + (x / mx * 100).toFixed(1) + '%" title="' + fmtSAR(x) + '"></i>').join('') + '</div>';
+    p += '<div class="sched-x" aria-hidden="true">' + o.months.map((mo, i) => '<span>' + (i % every === 0 ? MONTHS[mo] : '') + '</span>').join('') + '</div>';
+    p += '<dl class="kv"><dt>Lowest and highest instalment</dt><dd>' + fmtSAR(Math.min.apply(null, o.pays)) + ' to ' + fmtSAR(mx) + '</dd><dt>Cover after the new instalment</dt><dd>' + o.dscrNew.toFixed(2) + '×</dd><dt>Longest term allowed</dt><dd>' + o.nMax + ' months</dd></dl></section>';
+    const comp = [['Cost of funds', PRICE.funds, 'var(--rule-strong)'], ['Expected loss (L3)', o.ELrate, 'var(--bad)'], ['Capital charge', o.capCharge, 'var(--warn)'], ['Operating cost', PRICE.ops, 'var(--muted)']];
+    const tot = comp.reduce((a, c) => a + c[1], 0);
+    p += '<section class="panel"><h3>Pricing and expected loss</h3><p class="sub">Profit rate built up from its parts (L4), rounded up to the next 0.25%.</p><div class="stack" aria-hidden="true">' + comp.map(c => '<i style="width:' + (c[1] / tot * 100).toFixed(1) + '%;background:' + c[2] + '"></i>').join('') + '</div>';
+    p += '<ul class="legend2">' + comp.map(c => '<li><i style="background:' + c[2] + '"></i><span>' + c[0] + '</span><b>' + pctR(c[1]) + '</b></li>').join('') + '</ul>';
+    p += '<dl class="kv"><dt>Security, loss given default (L1)</dt><dd>' + SECURITY[S.security][0] + ', ' + pct(o.lgd) + '</dd><dt>Lifetime expected loss (L3)</dt><dd>' + fmtSAR(o.EL) + '</dd><dt>Profit rate (L4)</dt><dd>' + pctR(o.rate) + ' a year</dd><dt>Return on capital (L5)</dt><dd>' + pct(o.raroc, 1) + ' vs 15% hurdle</dd></dl></section>';
+  }
+  p += '<section class="panel"><h3>Credibility weighting (Z1)</h3><p class="sub">Own figures blended with the ' + R.sec.name.toLowerCase() + ' sector, Z = n ÷ (n + 4).</p><div class="tbl-wrap"><table class="ctab"><thead><tr><th>Figure</th><th>Own</th><th>Sector</th><th>Z</th><th>Used</th></tr></thead><tbody>';
+  R.cred.forEach(c => { p += '<tr><td>' + c.name + '</td><td>' + c.f(c.own) + '</td><td>' + c.f(c.prior) + '</td><td>' + Math.round(c.Z * 100) + '%</td><td class="u">' + c.f(c.used) + '</td></tr>'; });
+  p += '</tbody></table></div></section>';
+  const confCol = R.conf >= 80 ? 'var(--good)' : R.conf >= 60 ? 'var(--warn)' : 'var(--bad)';
+  p += '<section class="panel"><h3>Data confidence ' + R.conf + '%</h3><div class="meter"><i style="width:' + R.conf + '%;background:' + confCol + '"></i></div>';
+  p += R.ded.length ? '<ul class="ded">' + R.ded.map(d => '<li><b>−' + d[0] + '</b><span>' + d[1] + '<small>' + d[2] + '</small></span></li>').join('') + '</ul>' : '<p style="margin:0">Every input is present and clean, so nothing is cut.</p>';
+  p += '</section>';
+  const stName = {pass:'Pass', flag:'Flag', fail:'Fail', skip:'Not run'};
+  p += '<section class="panel"><h3>Fraud gate and VAT cross-checks</h3><ul class="checks">' + R.fraud.map(f => '<li><button type="button" class="code" data-node="' + f.node + '">' + f.code + '</button><span>' + f.name + '<small>' + f.note + '</small></span><span class="st ' + f.status + '">' + stName[f.status] + '</span></li>').join('') + '</ul></section>';
+  p += '<section class="panel span2"><h3>Turnover and cash flow</h3><dl class="kv">';
+  p += '<dt>Statement credits, monthly</dt><dd>' + fmtSAR(R.T0) + '</dd>';
+  if (R.circ > 0) p += '<dt>Removed as circular (F6)</dt><dd>−' + fmtSAR(R.T0 * R.circ) + '</dd>';
+  if (R.rel > 0) p += '<dt>Removed as related-company receipts (R11)</dt><dd>−' + fmtSAR(R.T0 * R.rel) + '</dd>';
+  p += '<dt>Largest single credit (C8)</dt><dd>' + fmtSAR(S.largest / 100 * R.T0) + ', ' + S.largest + '% of its month</dd>';
+  if (R.oneOff > 0) p += '<dt>One-off part left out (C8)</dt><dd>−' + fmtSAR(R.oneOff) + ' a month</dd>';
+  p += '<dt>Adjusted turnover, yearly (R1)</dt><dd>' + fmtSAR(R.T * 12) + '</dd>';
+  if (R.returns) p += '<dt>Coverage, quarter-matched and lag-adjusted (R2, V10)</dt><dd>' + R.covRaw.toFixed(2) + ' → ' + R.covAdj.toFixed(2) + '</dd>';
+  if (R.yoy) p += '<dt>VAT sales growth, year on year (V8)</dt><dd>' + sign(S.vatGrowth) + '%</dd>';
+  p += '<dt>Cash operating margin used (M2, Z1)</dt><dd>' + pct(R.m, 1) + '</dd>';
+  p += '<dt>Cash for debt service, monthly (C1)</dt><dd>' + fmtSAR(R.cfAvg) + '</dd>';
+  p += '<dt>Same, at −20% turnover (C3)</dt><dd>' + fmtSAR(R.cfStress) + '</dd>';
+  p += '<dt>Existing instalments (d)</dt><dd>' + fmtSAR(S.emi) + '</dd>';
+  p += '<dt>Room for a new instalment</dt><dd>' + (R.pMax > 0 ? fmtSAR(R.pMax) : 'None') + '</dd>';
+  p += '</dl></section>';
+  $('#panels').innerHTML = p;
+
+  const dock = $('#dock');
+  dock.innerHTML = '<span><b class="ds-' + R.tone + '">' + R.decision + '</b></span><span>' + (o && R.decision !== 'Decline' ? fmtSAR(o.amount) + ', ' + o.n + ' mo, ' + pctR(o.rate) : 'No offer') + '</span><span>Grade ' + R.grade + '</span>';
+}
+
+$('#results').addEventListener('click', e => {
+  const b = e.target.closest('[data-node]');
+  if (!b) return;
+  const id = b.dataset.node;
+  if (location.hash !== '#map') location.hash = 'map';
+  show('map');
+  select(id);
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (nodeEl[id]) nodeEl[id].scrollIntoView({block:'center', behavior: reduceMotion ? 'auto' : 'smooth'}); }));
+});
+
+/* ---------------- views ---------------- */
+let view = 'map';
+function show(v){
+  view = v === 'applicant' ? 'applicant' : 'map';
+  const isMap = view === 'map';
+  $('#view-map').hidden = !isMap;
+  $('#view-app').hidden = isMap;
+  $('#tab-map').setAttribute('aria-selected', String(isMap));
+  $('#tab-app').setAttribute('aria-selected', String(!isMap));
+  if (isMap) requestAnimationFrame(drawWires);
+  updateDock();
+}
+$('#tab-map').addEventListener('click', () => { location.hash = 'map'; });
+$('#tab-app').addEventListener('click', () => { location.hash = 'applicant'; });
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+
+let verdictVisible = true;
+function updateDock(){ $('#dock').classList.toggle('show', view === 'applicant' && !verdictVisible); }
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => { verdictVisible = es[0].isIntersecting; updateDock(); }, {threshold:0}).observe($('#verdict'));
+}
+$('#dock').addEventListener('click', () => $('#verdict').scrollIntoView({block:'start', behavior: reduceMotion ? 'auto' : 'smooth'}));
+
+/* ---------------- init ---------------- */
+buildControls();
+syncControls();
+renderPresets();
+render();
+if (window.matchMedia('(min-width:1240px)').matches) sel = 'o_amt';
+renderDetail();
+show(location.hash.slice(1));
+let raf = 0;
+const redraw = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawWires); };
+if ('ResizeObserver' in window) new ResizeObserver(redraw).observe($('#graph'));
+window.addEventListener('resize', redraw);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(redraw);
+})();
+</script>
+</body>
+</html>
