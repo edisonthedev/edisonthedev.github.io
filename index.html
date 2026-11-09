@@ -236,6 +236,62 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
 .ctab th{font-weight:600;color:var(--muted);font-size:12.5px}
 .ctab td.u{font-weight:700}
 .tbl-wrap{overflow-x:auto}
+.stm-grid{display:grid;gap:22px;padding-bottom:20px}
+@media (min-width:980px){.stm-grid{grid-template-columns:minmax(300px,360px) minmax(0,1fr);align-items:start}}
+.stm-intro{margin:20px 0 14px;max-width:72ch}
+.stm-load h3{margin:16px 0 8px}.stm-load h3:first-child{margin-top:0}
+.stm-drop{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:relative}
+.stm-drop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.stm-btn{appearance:none;display:inline-block;border:1px solid var(--bank);background:var(--bank);color:var(--paper);font-weight:600;font-size:14px;padding:8px 15px;border-radius:999px;cursor:pointer;line-height:1.3}
+.stm-btn.ghost{background:transparent;color:var(--bank)}
+.stm-btn[disabled]{opacity:.45;cursor:default}
+.stm-drop input[type=file]:focus-visible + label{outline:2px solid var(--focus);outline-offset:2px}
+.stm-file{font-size:13px;color:var(--muted);margin:8px 0 0}
+.stm-form{display:grid;gap:8px;margin-bottom:12px}
+.stm-form label,.stm-maprow{display:grid;gap:3px;font-size:13px;color:var(--muted)}
+.stm-form input,.stm-form select,.stm-maprow select{font:inherit;font-size:14px;color:var(--ink);padding:7px 9px;border-radius:8px;border:1px solid var(--rule-strong);background:var(--surface);min-width:0}
+.stm-map{margin-top:14px;border-top:1px solid var(--rule);padding-top:10px}
+.stm-map summary{cursor:pointer;font-weight:600;font-size:14px}
+.stm-map .help{font-size:12.5px;color:var(--muted)}
+.stm-maprow{margin-top:6px}
+.ltab th,.ltab td{text-align:left}
+.ctab tr.partial td{color:var(--muted)}
+.checks small.ex{font-size:12px;color:var(--muted)}
+#stm-out .verdict{margin-bottom:14px}
+#stm-out .panels{margin-bottom:20px}
+.graph-scroll{overflow-x:auto;margin:0 -4px;padding:0 4px}
+@media (min-width:1240px){
+  .maplayout.catmode{display:block}
+  .maplayout.catmode .detail{position:fixed;top:auto;left:auto;right:24px;bottom:calc(24px + env(safe-area-inset-bottom,0px));width:380px;max-height:62vh;overflow:auto;z-index:14;box-shadow:0 12px 40px rgba(0,0,0,.22);display:none}
+  .maplayout.catmode .detail.open{display:block}
+  .maplayout.catmode .d-close{display:inline-flex}
+}
+.band-cat,.band-tot{display:none}
+.graph.catmode .band-cat,.graph.catmode .band-tot{display:flex}
+@media (min-width:900px){.graph.catmode{grid-template-columns:minmax(160px,190px) minmax(170px,200px) minmax(150px,175px) minmax(220px,1fr) minmax(150px,180px);column-gap:52px;min-width:1080px}}
+.graph.catmode .node[data-id="n_cat"]{display:none}
+.node-cat{padding:7px 10px}
+.node-cat .nm{font-size:13px}
+.node-cat .sub{font-size:11.5px;letter-spacing:.02em}
+.node-cat.cin{border-left:3px solid var(--ink)}
+.node-cat.cout{border-left:3px dashed var(--muted)}
+.node-tot{border-style:dashed;border-color:var(--rule-strong)}
+.node .amt{font-size:12px;color:var(--bank);font-weight:600;line-height:1.3}
+.node .amt:empty{display:none}
+.wire.cat{stroke:var(--ink)}
+.cat-sw{margin:0 0 4px}
+.cat-source{font-size:13px;color:var(--muted);margin:-4px 0 14px}
+.cat-rules{margin:4px 0 28px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px 20px}
+.cat-rules h2{font-size:19px;margin:0 0 4px;letter-spacing:-0.01em}
+.cat-rules h3{font-size:14px;margin:18px 0 8px;color:var(--muted)}
+.cat-rules .sub{font-size:13.5px;color:var(--muted);margin:0}
+.rules-grid{display:grid;gap:4px 32px}
+@media (min-width:900px){.rules-grid{grid-template-columns:1fr 1fr}}
+ol.rules{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+ol.rules li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:13.5px;line-height:1.4}
+.r-n{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.r-t small{display:block;color:var(--muted);font-size:12.5px}
+ol.rules .chip{white-space:nowrap}
 .foot{font-size:13px;color:var(--muted);margin:10px 0 90px;max-width:70ch}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -243,18 +299,20 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
 <body>
 <header class="top wrap">
   <h1>Nexa transaction analysis engine</h1>
-  <p class="lede">Bank statements, VAT records and a few application fields feed 35 groups of analyses that decide whether we finance a business, how much, at what rate, for how long and when each instalment falls. Tap anything on the map to trace it, or try an applicant and watch the offer change.</p>
+  <p class="lede">Bank statements, VAT records and a few application fields feed 36 groups of analyses that decide whether we finance a business, how much, at what rate, for how long and when each instalment falls. Tap anything on the map to trace it, or try an applicant and watch the offer change.</p>
 </header>
 <nav class="tabbar" aria-label="Views">
   <div class="wrap tabs" role="tablist">
     <button class="tab" role="tab" id="tab-map" aria-controls="view-map" aria-selected="true" type="button">Map</button>
     <button class="tab" role="tab" id="tab-app" aria-controls="view-app" aria-selected="false" type="button">Try an applicant</button>
+    <button class="tab" role="tab" id="tab-stm" aria-controls="view-stmt" aria-selected="false" type="button">Analyse a statement</button>
   </div>
 </nav>
 <main class="wrap">
   <section id="view-map" role="tabpanel" aria-labelledby="tab-map">
     <div class="maphead">
-      <p class="hint">Tap a box to see what it reads and what it changes.</p>
+      <div><p class="hint" id="map-hint">Tap a box to see what it reads and what it changes.</p>
+      <label class="switch cat-sw" for="cat-switch"><input type="checkbox" id="cat-switch"><span class="tr"></span><span>Show the categorisation layer and its rules</span></label></div>
       <div class="legend">
         <span><i class="dot bank"></i>Bank statement data</span>
         <span><i class="dot vat"></i>VAT data</span>
@@ -262,8 +320,9 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
         <span><i class="sq-out"></i>Decision</span>
       </div>
     </div>
+    <p class="cat-source" id="cat-source" hidden></p>
     <div class="maplayout">
-      <div class="graph" id="graph">
+      <div class="graph-scroll"><div class="graph" id="graph">
         <svg class="wires" id="wires" aria-hidden="true"></svg>
         <section class="band band-in" aria-label="What we read">
           <h2>What we read</h2>
@@ -277,9 +336,19 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
             <div class="nodes" id="n-app"></div>
           </div>
         </section>
+        <section class="band band-cat" aria-label="How each line is labelled">
+          <h2>How each line is labelled</h2>
+          <p class="count">31 categories, money in (CR) and out (DR)</p>
+          <div class="band-body" id="n-cats"></div>
+        </section>
+        <section class="band band-tot" aria-label="What the lines add up to">
+          <h2>What the lines add up to</h2>
+          <p class="count">13 monthly totals</p>
+          <div class="band-body"><div class="nodes" id="n-tots"></div></div>
+        </section>
         <section class="band band-an" aria-label="What we work out">
           <h2>What we work out</h2>
-          <p class="count">12 from your framework, 23 added</p>
+          <p class="count">12 from your framework, 24 added</p>
           <div class="band-body">
             <h3>From your framework (a–t and VAT)</h3>
             <div class="nodes" id="n-old"></div>
@@ -292,9 +361,10 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
           <p class="count">8 outputs</p>
           <div class="band-body"><div class="nodes" id="n-out"></div></div>
         </section>
-      </div>
+      </div></div>
       <aside class="detail" id="detail" aria-live="polite"></aside>
     </div>
+    <section class="cat-rules" id="cat-rules" hidden></section>
   </section>
 
   <section id="view-app" role="tabpanel" aria-labelledby="tab-app" hidden>
@@ -307,10 +377,42 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
       <div class="controls" id="controls"></div>
     </div>
   </section>
+  <section id="view-stmt" role="tabpanel" aria-labelledby="tab-stm" hidden>
+    <p class="stm-intro">Load a bank statement exported as Excel or CSV. Every line is categorised, checked for outliers and warning signs, and turned into the decision inputs. It all runs in your browser: the file is not uploaded or stored anywhere.</p>
+    <div class="stm-grid">
+      <div class="panel stm-load">
+        <h3>1. Load a statement</h3>
+        <div class="stm-drop">
+          <input type="file" id="stm-file" accept=".csv,.xlsx,.xls,.txt">
+          <label for="stm-file" class="stm-btn">Choose a file</label>
+          <button type="button" class="stm-btn ghost" id="stm-sample">Try a sample statement</button>
+        </div>
+        <p class="stm-file" id="stm-status">No file loaded.</p>
+        <h3>2. Who is who</h3>
+        <p class="stm-file" style="margin:-4px 0 8px">These names sharpen the categories: transfers to owners, own accounts, related companies and lenders are not sales or costs.</p>
+        <div class="stm-form">
+          <label>Business name<input id="stm-biz" type="text" placeholder="e.g. Al Noor Trading" autocomplete="off"></label>
+          <label>Owner names<input id="stm-owners" type="text" placeholder="Comma separated" autocomplete="off"></label>
+          <label>Own account numbers or IBANs<input id="stm-acc" type="text" placeholder="The business’s other accounts" autocomplete="off"></label>
+          <label>Related companies<input id="stm-rel" type="text" placeholder="Same owners or directors" autocomplete="off"></label>
+          <label>Lenders<input id="stm-lend" type="text" placeholder="Existing financing providers" autocomplete="off"></label>
+          <label>Sector<select id="stm-sector"></select></label>
+          <label>Years trading<input id="stm-age" type="number" min="0.5" max="15" step="0.5" value="3"></label>
+          <label>VAT status<select id="stm-vat"></select></label>
+          <label>Security offered<select id="stm-sec"></select></label>
+          <label>Amount requested (SAR)<input id="stm-req" type="number" min="20000" step="10000" value="500000"></label>
+        </div>
+        <button type="button" class="stm-btn" id="stm-run" disabled>Analyse again</button>
+        <details class="stm-map" id="stm-mapbox"><summary>Columns detected</summary><div id="stm-map"></div></details>
+      </div>
+      <div id="stm-out"><section class="panel"><h3>Results appear here</h3><p class="sub" style="margin:0">Choose a file, or try the sample statement to see what the analysis produces.</p></section></div>
+    </div>
+  </section>
   <p class="foot">Thresholds, weights, sector priors, LGDs, pricing assumptions and probabilities are placeholders to calibrate on the bank’s own data and real repayment outcomes. Everything runs in your browser and nothing is stored.</p>
 </main>
 <button class="dock" id="dock" type="button"></button>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -338,7 +440,7 @@ const INPUTS = [
   {id:'v_due', src:'vat', name:'VAT due and corrections', sub:'Return boxes 13 to 16', desc:'What the business owed or reclaimed each period.', fields:['Box 13 VAT due','Box 14 corrections from earlier periods','Box 15 credit carried forward','Box 16 net VAT due or reclaimed']},
   {id:'v_dates', src:'vat', name:'Periods and filing dates', sub:'Return history', desc:'Which periods were filed and when, against the due date at the end of the following month.', fields:['Tax period start and end','Filing date','Nil returns','Two years requested: the last 8 quarterly or 24 monthly returns']},
   {id:'a_sec', src:'app', name:'Security offered', sub:'Guarantee, collateral or none', desc:'What stands behind the facility. It sets the loss given default.', fields:['None','Personal guarantee','Kafalah guarantee','Collateral']},
-  {id:'a_sector', src:'app', name:'Sector and owners', sub:'CR activity, owners, directors', desc:'The sector picks the benchmarks and the credibility priors; the owners identify related companies.', fields:['CR activity (sector)','Owners and directors','Other companies they own']},
+  {id:'a_sector', src:'app', name:'Sector, owners and lenders', sub:'CR activity, owners, lenders', desc:'The sector picks the benchmarks and the credibility priors. Owners, their other companies and existing lenders let the categoriser tell drawings, related-company money and instalments apart from sales and costs.', fields:['CR activity (sector)','Owners and directors','Other companies they own','Existing lenders (application, SIMAH)','The business’s other accounts (application)']},
   {id:'a_book', src:'app', name:'The rest of the book', sub:'Other applicants and borrowers', desc:'Counterparties, IBANs, owners and addresses of everyone else we have seen, for the network checks.', fields:['Counterparties and IBANs','Owners and addresses','Borrowers that share a buyer']}
 ];
 
@@ -369,6 +471,7 @@ const ANALYSES = [
   {id:'n_pat', name:'Fraud patterns', ids:'F4 to F11, l, q', uses:['b_amt','b_cp','b_bal','v_sales'], feeds:['o_gen','o_turn'], desc:'Transaction patterns that real trading rarely produces. Builds on your month-end spike (l) and circular (q) checks.', measures:['Benford and round amounts (F4)','Duplicates and reversals (F5)','Circular flows (F6, q)','Window dressing (F7, l)','Pass-through velocity (F8)','Activity mismatch, dormancy then surge (F9, F10)']},
   {id:'n_sch', name:'Schedule fit', ids:'S1, S2, S4, S5', uses:['b_bal','b_amt','b_ch'], feeds:['o_sched','o_tenor'], desc:'Fits instalments to the account’s own cash cycle.', measures:['Best instalment day by balance coverage (S1)','Seasonal instalment profile (S2)','Disbursement timing (S4)','Fixed instalment or split settlement (S5)']},
   {id:'n_conf', name:'Data confidence and substitutes', ids:'Missing-data rules', uses:['b_hdr','b_meta','v_id','v_sales'], feeds:['o_amt','o_elig'], desc:'Checks what is missing and builds a substitute: a synthetic cash flow statement from categorised lines, a proxy P&L from VAT boxes. Each gap lowers confidence, which scales the amount.', measures:['Synthetic cash flow statement','Proxy P&L from VAT boxes','Confidence score, 0 to 100','Below 60: manual review']},
+  {id:'n_cat', name:'Categorisation layer', ids:'CAT, feeds every analysis', uses:['b_amt','b_narr','b_ch','b_cp','b_hdr','a_sector'], feeds:['o_turn','o_gen','o_amt'], desc:'Labels every statement line (sales by channel, suppliers, payroll, GOSI, rent, VAT, instalments, owner and internal transfers and more) and adds them up into the monthly totals every analysis uses. The Analyse a statement tab runs it on a real file.', measures:['31 categories, each with a cash-flow section','Rules in a fixed order: returns, own accounts, owners, related companies, lenders, billers, channels, transfers','Pattern pass: possible instalments, circular pairs, duplicates','Uncategorised share; over 10% costs data confidence']},
   {id:'n_payer', name:'Payer quality', ids:'R10', uses:['b_cp','b_ch'], feeds:['o_grade','o_amt'], desc:'Who pays the business, not just how concentrated they are. Government and large corporates rarely fail but can pay late; SMEs can fail.', measures:['Main payer type: government, corporate, SME or individuals','Payment-delay and payer-failure shocks fed into the simulation (C9)','Adjustment to the revenue-quality score']},
   {id:'n_rel', name:'Related-party flows', ids:'R11', uses:['b_cp','a_sector'], feeds:['o_turn','o_amt','o_gen'], desc:'Money to and from companies with the same owners or directors. Treated like owner transfers, because it is not trading.', measures:['Receipts from related companies, removed from turnover','Payments to related companies, treated like drawings','Related share of credits and debits']},
   {id:'n_hijri', name:'Hijri-aligned seasonality', ids:'R12, optional', uses:['b_amt','a_sector'], feeds:['o_sched'], desc:'For businesses whose peak follows Ramadan and Eid, the peak moves about 11 days earlier each Gregorian year. Off by default.', measures:['Peak month for each year of the tenor','Used by the seasonal schedule (S2) and the simulation (C9)']},
@@ -432,6 +535,7 @@ ANALYSES.forEach(n => $(n.old ? '#n-old' : '#n-new').appendChild(makeNode(n)));
 OUTPUTS.forEach(n => $('#n-out').appendChild(makeNode(n)));
 
 function related(id){
+  if (catMode) return relatedCat(id);
   const nodes = new Set([id]), edges = new Set();
   const k = byId[id].kind;
   if (k === 'in') {
@@ -454,7 +558,7 @@ function drawWires(){
   svg.setAttribute('width', w); svg.setAttribute('height', h);
   svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
   let out = '';
-  EDGES.forEach(e => {
+  (catMode ? EDGES_CAT : EDGES).forEach(e => {
     const a = nodeEl[e.from].getBoundingClientRect(), b = nodeEl[e.to].getBoundingClientRect();
     let d;
     if (b.left >= a.right - 1) {
@@ -470,7 +574,7 @@ function drawWires(){
   applySel();
 }
 
-let sel = null;
+let sel = null, catMode = false;
 function applySel(){
   const g = $('#graph'), svg = $('#wires');
   if (!sel) {
@@ -494,6 +598,8 @@ function applySel(){
 function kindLabel(n){
   if (n.kind === 'in') return '<i class="dot ' + n.src + '"></i>' + ({bank:'Bank statement data', vat:'VAT data', app:'Application and book data'}[n.src]);
   if (n.kind === 'an') return n.old ? 'Analysis from your framework' : 'Added analysis';
+  if (n.kind === 'cat') return 'Category · money ' + (n.dir === 'in' ? 'in (CR, credit)' : 'out (DR, debit)');
+  if (n.kind === 'tot') return 'Monthly total';
   return '<i class="sq-out"></i>Decision';
 }
 function chip(id){
@@ -506,19 +612,37 @@ function renderDetail(){
   const d = $('#detail');
   if (!sel) {
     d.classList.remove('open');
-    d.innerHTML = '<p class="d-kind">Reading the map</p><h3>Left to right: read, work out, decide</h3><p>Data points on the left feed the analyses in the middle, which feed the decisions on the right. Tap any box to light up its links, then tap a name here to follow one.</p>';
+    d.innerHTML = catMode ? '<p class="d-kind">Reading the map</p><h3>Read, label, add up, work out, decide</h3><p>Every statement line takes one of 31 categories by the rules below the map, then adds into a monthly total. The analyses read those totals, never raw lines. VAT, application and file data skip the categories and go straight to the analyses that need them. Tap any box to light up its whole chain.</p>' : '<p class="d-kind">Reading the map</p><h3>Left to right: read, work out, decide</h3><p>Data points on the left feed the analyses in the middle, which feed the decisions on the right. Tap any box to light up its links, then tap a name here to follow one.</p>';
     return;
   }
   const n = byId[sel];
   let h = '<div class="d-top"><p class="d-kind">' + kindLabel(n) + '</p><button type="button" class="d-close" aria-label="Close">×</button></div><h3>' + n.name + '</h3>';
+  const chipsOf = ids => '<div class="chips">' + ids.map(chip).join('') + '</div>';
+  if (n.kind === 'cat') {
+    const tots = TOTALS.filter(t => t.uses.includes(n.id)).map(t => t.id), direct = ANALYSES.filter(a => (CAT_USES[a.id] || []).includes(n.id)).map(a => a.id);
+    h += '<p class="d-ids">' + n.id + '</p><p>' + SECT_TEXT[n.sect] + '</p>';
+    h += sec('Recognised by', '<ul>' + rulesFor(n.id).map(r => '<li>' + r + '</li>').join('') + '</ul>');
+    h += sec('Read from', chipsOf(n.uses));
+    h += sec('Adds into', tots.length ? chipsOf(tots) : '<p>No total: it is kept out of every total.</p>');
+    if (direct.length) h += sec('Also read directly by', chipsOf(direct));
+    const b = STM.result && STM.result.byCat ? STM.result.byCat[n.id] : null;
+    if (STM.result && STM.result.lines) h += sec('In your statement', '<p>' + (b ? b.n + ' line' + (b.n > 1 ? 's' : '') + ', ' + fmtSAR(b.in || b.out) + ' ' + (n.dir === 'in' ? 'in' : 'out') : 'No lines in this category') + '.</p>');
+    d.innerHTML = h; d.classList.add('open'); return;
+  }
+  if (n.kind === 'tot') {
+    h += '<p class="d-ids">' + (n.sym ? 'Symbol: ' + n.sym : 'Monthly total') + '</p><p>' + n.desc + '</p>';
+    h += sec('Built from', chipsOf(n.uses));
+    h += sec('Used by', chipsOf(catUsers(n.id)));
+    d.innerHTML = h; d.classList.add('open'); return;
+  }
   if (n.kind === 'an') h += '<p class="d-ids">' + n.ids + '</p>';
   h += '<p>' + n.desc + '</p>';
   if (n.kind === 'in') {
     h += sec('Contains', '<ul>' + n.fields.map(f => '<li>' + f + '</li>').join('') + '</ul>');
-    h += sec('Used by', '<div class="chips">' + ANALYSES.filter(a => a.uses.includes(n.id)).map(a => chip(a.id)).join('') + '</div>');
+    h += sec('Used by', catMode ? chipsOf(catUsers(n.id)) : '<div class="chips">' + ANALYSES.filter(a => a.uses.includes(n.id)).map(a => chip(a.id)).join('') + '</div>');
   } else if (n.kind === 'an') {
     h += sec('Measures', '<ul>' + n.measures.map(f => '<li>' + f + '</li>').join('') + '</ul>');
-    h += sec('Reads', '<div class="chips">' + n.uses.map(chip).join('') + '</div>');
+    h += sec('Reads', '<div class="chips">' + (catMode ? (CAT_USES[n.id] || n.uses) : n.uses).map(chip).join('') + '</div>');
     h += sec('Changes', '<div class="chips">' + n.feeds.map(chip).join('') + '</div>');
   } else {
     h += sec('Built from', '<div class="chips">' + ANALYSES.filter(a => a.feeds.includes(n.id)).map(a => chip(a.id)).join('') + '</div>');
@@ -618,7 +742,7 @@ const PRESETS = [
   {name:'Over-stretched borrower', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:300000, growth:-15, season:20, cv:25, peak:7, hijri:false, margin:9, age:4, top:20, payer:'individuals', pos:60, inflowDay:10, largest:15, related:0, emi:70000, drawings:40, bounces:5, missed:2, negDays:38, cov:0.95, lag:0, onTime:70, vatYears:2, vatGrowth:-12, match:85, edited:false, mismatch:false, circular:0, spikes:false, pass:35, linked:false, security:'none', requested:500000}},
   {name:'Edited statement', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:450000, growth:12, season:15, cv:12, peak:2, hijri:false, margin:14, age:6, top:8, payer:'individuals', pos:75, inflowDay:5, largest:12, related:0, emi:15000, drawings:20, bounces:0, missed:0, negDays:0, cov:1.02, lag:0, onTime:100, vatYears:2, vatGrowth:10, match:92, edited:true, mismatch:false, circular:0, spikes:false, pass:25, linked:false, security:'pg', requested:600000}}
 ];
-const S = Object.assign({}, PRESETS[0].v);
+const S = Object.assign({extraFlagCodes:[], uncat:0}, PRESETS[0].v);
 let activePreset = 0;
 
 const sign = v => v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0';
@@ -631,7 +755,7 @@ const CONTROLS = [
     {k:'cv', label:'Month-to-month variability', min:5, max:60, step:1, fmt:v => v + '%', help:'h. Drives the cash-flow simulation (C9)'},
     {k:'peak', label:'Peak month', type:'select', num:true, options:MONTHS.map((m, i) => [i, m])},
     {k:'hijri', label:'Peak follows Ramadan and Eid (Hijri)', type:'toggle', help:'R12, off by default. The peak moves about 11 days earlier each year'},
-    {k:'margin', label:'Cash operating margin', min:2, max:40, step:1, fmt:v => v + '%', help:'Before owner drawings (M2)'},
+    {k:'margin', label:'Cash operating margin', min:-20, max:40, step:1, fmt:v => v + '%', help:'Before owner drawings (M2)'},
     {k:'age', label:'Years trading', min:0.5, max:15, step:0.5, fmt:v => v + (v === 1 ? ' year' : ' years')},
     {k:'top', label:'Largest payer’s share of sales', min:2, max:100, step:1, fmt:v => v + '%', help:'R5'},
     {k:'payer', label:'Main payer type', type:'select', options:Object.keys(PAYERS).map(k => [k, PAYERS[k].name]), help:'R10. Government and corporates can pay late; SMEs can fail'},
@@ -651,7 +775,8 @@ const CONTROLS = [
     {k:'months', label:'Months of statements', min:3, max:12, step:1, fmt:v => v + ' months'},
     {k:'vatStatus', label:'VAT status', type:'select', options:[['returns','Registered, returns provided'],['noreturns','Registered, returns missing'],['none','Not registered']]},
     {k:'cfs', label:'Cash flow statement provided', type:'toggle'},
-    {k:'source', label:'How statements arrive', type:'select', options:[['pdf','Native PDF from the bank'],['scan','Scanned image'],['ob','Open-banking feed']]}
+    {k:'source', label:'How statements arrive', type:'select', options:[['pdf','Native PDF from the bank'],['scan','Scanned image'],['ob','Open-banking feed']]},
+    {k:'uncat', label:'Uncategorised statement lines, share of value', min:0, max:60, step:1, fmt:v => v + '%', help:'Categorisation layer. Over 10% costs data confidence'}
   ]},
   {group:'VAT', items:[
     {k:'cov', label:'Statement credits ÷ VAT-declared sales', min:0.3, max:2.2, step:0.01, fmt:v => Number(v).toFixed(2), help:'R2. Box 1 grossed up at 15%; 0.7 to 1.3 is normal before the lag adjustment', dep:'returns'},
@@ -666,7 +791,7 @@ const CONTROLS = [
     {k:'mismatch', label:'Account name differs from the VAT certificate', type:'toggle', help:'F3, hard fail'},
     {k:'circular', label:'Circular flows, share of credits', min:0, max:40, step:1, fmt:v => v + '%', help:'F6. Over 10% flags; always removed from turnover'},
     {k:'spikes', label:'Balance spikes at month-end', type:'toggle', help:'F7'},
-    {k:'pass', label:'Credits leaving within 48 hours', min:0, max:100, step:5, fmt:v => v + '%', help:'F8. Over 70% flags'},
+    {k:'pass', label:'Credits passing through within 48 hours', min:0, max:100, step:5, fmt:v => v + '%', help:'F8: money landing in a near-empty account and leaving within 48 hours. Over 70% flags'},
     {k:'linked', label:'Shares an owner, IBAN or address with another applicant', type:'toggle', help:'F13, soft flag'}
   ]},
   {group:'Request and security', items:[
@@ -747,7 +872,7 @@ $('#presets').addEventListener('click', e => {
   const b = e.target.closest('[data-i]');
   if (!b) return;
   activePreset = Number(b.dataset.i);
-  Object.assign(S, PRESETS[activePreset].v);
+  Object.assign(S, {extraFlagCodes:[], uncat:0}, PRESETS[activePreset].v);
   syncControls(); renderPresets(); render();
 });
 
@@ -791,7 +916,7 @@ function compute(s){
   fraud.push({code:'F3', name:'Identity match', node:'n_doc', status:s.mismatch ? 'fail' : 'pass', note:s.mismatch ? 'Account name differs from VAT certificate' : 'Names, IBAN and VAT number agree'});
   fraud.push({code:'F6', name:'Circular flows', node:'n_pat', status:s.circular > 10 ? 'flag' : 'pass', note:s.circular + '% of credits'});
   fraud.push({code:'F7', name:'Month-end spikes', node:'n_pat', status:s.spikes ? 'flag' : 'pass', note:s.spikes ? 'Balance lifted around month-end' : 'None found'});
-  fraud.push({code:'F8', name:'Pass-through', node:'n_pat', status:s.pass > 70 ? 'flag' : 'pass', note:s.pass + '% leave within 48 hours'});
+  fraud.push({code:'F8', name:'Pass-through', node:'n_pat', status:s.pass > 70 ? 'flag' : 'pass', note:s.pass + '% pass through a near-empty account within 48 hours'});
   if (returns) {
     const st = (covAdj < 0.4 || covAdj > 2.0) ? 'fail' : (covAdj < lo || covAdj > hi) ? 'flag' : 'pass';
     fraud.push({code:'F11', name:'VAT vs statements', node:'n_lag', status:st, note:'Coverage ' + covAdj.toFixed(2) + (L ? ' after the ' + L + '-day lag' : '') + ', band ' + lo.toFixed(2) + ' to ' + hi.toFixed(2)});
@@ -802,6 +927,7 @@ function compute(s){
   else fraud.push({code:'V8', name:'Year-on-year VAT', node:'x_yoy', status:'skip', note:returns ? 'Only one year of returns' : 'No returns to compare'});
   fraud.push(returns ? {code:'V9', name:'VAT items vs statements', node:'x_map', status:s.match < 75 ? 'flag' : 'pass', note:s.match + '% of declared value traced'} : {code:'V9', name:'VAT items vs statements', node:'x_map', status:'skip', note:'No returns to compare'});
   fraud.push({code:'F13', name:'Cross-applicant network', node:'n_net', status:s.linked ? 'flag' : 'pass', note:s.linked ? 'Shares an owner, IBAN or address with another applicant' : 'No links to other applicants'});
+  (s.extraFlagCodes || []).forEach(c => fraud.push({code:c.code, name:c.name, node:c.node, status:'flag', note:c.note}));
   const hard = fraud.filter(f => f.status === 'fail'), soft = fraud.filter(f => f.status === 'flag');
 
   const ded = [];
@@ -811,6 +937,8 @@ function compute(s){
   if (!s.cfs) ded.push([10, 'No cash flow statement', 'Synthetic statement built from categorised lines (t)']);
   if (s.months < 12) ded.push([2 * (12 - s.months), s.months + ' months of statements', 'Turnover annualised; no seasonal profile']);
   if (s.source === 'scan') ded.push([10, 'Scanned statements', 'OCR, with stricter F1 and F2 checks']);
+  if ((s.uncat || 0) > 25) ded.push([10, 'Many statement lines uncategorised', s.uncat + '% of value could not be labelled; review them']);
+  else if ((s.uncat || 0) > 10) ded.push([5, 'Some statement lines uncategorised', s.uncat + '% of value could not be labelled']);
   if (returns && covAdj < lo) ded.push([15, 'Possible undisclosed account', 'Coverage under the band even after the lag (R2, V10); request other statements']);
   if (soft.length) ded.push([5 * soft.length, soft.length + ' soft flag' + (soft.length > 1 ? 's' : ''), soft.map(f => f.code).join(', ')]);
   const conf = Math.max(0, 100 - ded.reduce((a, x) => a + x[0], 0));
@@ -1069,20 +1197,1014 @@ $('#results').addEventListener('click', e => {
   requestAnimationFrame(() => requestAnimationFrame(() => { if (nodeEl[id]) nodeEl[id].scrollIntoView({block:'center', behavior: reduceMotion ? 'auto' : 'smooth'}); }));
 });
 
+/* ---------------- statement analysis ---------------- */
+const STM = {rows:null, hdr:-1, map:{}, name:'', result:null};
+const MAP_KEYS = [['date','Date'],['desc','Description'],['mode','Extra description (e.g. payment mode)'],['debit','Debit (money out)'],['credit','Credit (money in)'],['amount','Amount (signed)'],['type','Debit / credit marker'],['balance','Balance'],['ref','Reference'],['cp','Counterparty']];
+const HEAD_WORDS = {
+  value:['value date','تاريخ القيمة','تاريخ الاستحقاق'],
+  date:['date','transaction date','txn date','posting date','post date','booking date','التاريخ','تاريخ العملية','تاريخ'],
+  desc:['description','details','narrative','narration','transaction narration','transaction description','particulars','transaction details','remarks','memo','البيان','الوصف','التفاصيل','تفاصيل العملية'],
+  mode:['payment mode','transaction mode','payment category','mode','channel','طريقة الدفع','نوع الحركة'],
+  debit:['debit','debits','withdrawal','withdrawals','money out','paid out','dr','مدين','المدين','سحب','مسحوبات'],
+  credit:['credit','credits','deposit','deposits','money in','paid in','cr','دائن','الدائن','ايداع','إيداع','ايداعات'],
+  amount:['amount','transaction amount','المبلغ','مبلغ'],
+  balance:['balance','running balance','available balance','closing balance','الرصيد','رصيد'],
+  ref:['reference','ref','ref no','cheque/ref no','reference number','cheque no','الرقم المرجعي','مرجع'],
+  cp:['counterparty','beneficiary','beneficiary name','payee','payer','from/to','المستفيد','الطرف الآخر'],
+  type:['type','dr/cr','cr/dr','debit/credit','نوع العملية','نوع']
+};
+const CATS = {
+  'CR-CARD':['Card (POS / mada) settlements','in','Sales'], 'CR-ONLINE':['Online payment gateway','in','Sales'], 'CR-BNPL':['BNPL settlements received','in','Sales'],
+  'CR-CUST':['Customer transfers','in','Sales'], 'CR-GOV':['Government receipts','in','Sales'], 'CR-CASH':['Cash deposits','in','Sales'],
+  'CR-INT':['Transfers from own accounts','in','Excluded'], 'CR-OWNER':['Owner injections','in','Financing'], 'CR-REL':['Related-company receipts','in','Excluded'],
+  'CR-FIN':['Financing received','in','Financing'], 'CR-REF':['Refunds, reversals, returns received','in','Excluded'], 'CR-OTHER':['Uncategorised credits','in','Excluded'],
+  'DR-SUP':['Supplier and business payments','out','Operating'], 'DR-PAY':['Payroll (Mudad / WPS)','out','Operating'], 'DR-GOSI':['GOSI','out','Operating'],
+  'DR-RENT':['Rent (Ejar)','out','Operating'], 'DR-UTIL':['Utilities and telecom','out','Operating'], 'DR-VAT':['VAT paid to ZATCA','out','Operating'],
+  'DR-GOVFEE':['Government fees','out','Operating'], 'DR-FEE':['Bank fees, charges, penalties','out','Operating'], 'DR-CARD':['Card spend','out','Operating'],
+  'DR-CASH':['Cash withdrawals','out','Operating'], 'DR-OTHER':['Uncategorised debits','out','Operating'], 'DR-TAX':['Zakat and income tax','out','Tax'],
+  'DR-EMI':['Loan instalments','out','Financing'], 'DR-BNPL':['BNPL repayments','out','Financing'], 'DR-OWNER':['Owner drawings','out','Financing'],
+  'DR-REL':['Related-company payments','out','Financing'], 'DR-INT':['Transfers to own accounts','out','Excluded'], 'DR-CAPEX':['Equipment and vehicles','out','Investing'],
+  'DR-RET':['Returned receipts and refunds paid','out','Reduces sales']
+};
+const SALES_CODES = ['CR-CARD','CR-ONLINE','CR-BNPL','CR-CUST','CR-GOV','CR-CASH'];
+const OPS_CODES = ['DR-SUP','DR-PAY','DR-GOSI','DR-RENT','DR-UTIL','DR-VAT','DR-GOVFEE','DR-FEE','DR-CARD','DR-CASH','DR-OTHER'];
+const RX = {
+  returned:/RETURN(ED)?\s*(CHQ|CHEQUE|CHECK|ITEM)|CHQ\s*RET|UNPAID|INSUFFICIENT|\bNSF\b|BOUNCE|DISHONOU?R|مرتجع|ارتجاع|رصيد غير كاف/,
+  reversal:/REVERSAL|REVERSED|\bREV\b|CHARGE ?BACK|عكس|الغاء/,
+  refund:/REFUND|استرداد|استرجاع/,
+  fin:/DISBURS|\bLOAN\b|FINANC|TAWARRUQ|MURABAH|TAMWEEL|تمويل|قرض/,
+  emi:/INSTAL+MENT|\bEMI\b|LOAN\s*(REPAY|PAY|DEDUCT|INST)|FINANCE\s*(REPAY|PAY|INST)|\bREPAYMENT\b|قسط|اقساط|سداد تمويل/,
+  bnpl:/TABBY|TAMARA|تابي|تمارا/,
+  feeVat:/VAT\s*(ON|FOR)\s*(FEE|CHARGE|COMM|SERV)|(FEE|CHARGE|COMMISSION)S?.{0,12}VAT|ضريبه.{0,12}(رسوم|عموله)|(رسوم|عموله).{0,12}ضريبه|ضريبه القيمه المضافه علي|ضريبه القيمه المضافه.{0,200}اصل|اصل.{0,200}ضريبه القيمه المضافه/,
+  tax:/INCOME TAX|ضريبه الدخل|ZAKAT (PAYMENT|DUE|RETURN|ASSESSMENT)|زكوي|دفعه زكاه/,
+  vat:/\bVAT\b|VALUE ADDED|ZATCA|القيمه المضافه|هيئه الزكاه/,
+  gosi:/GOSI|SOCIAL INSURANCE|التامينات/,
+  pay:/MUDAD|\bWPS\b|PAYROLL|SALAR(Y|IES)|WAGES|رواتب|راتب|مدد|اجور/,
+  rent:/\bEJAR\b|\bRENT\b|RENTAL|\bLEASE\b|ايجار/,
+  util:/ELECTRIC|\bSEC\b|NATIONAL WATER|\bNWC\b|WATER BILL|\bSTC\b|MOBILY|\bZAIN\b|TELECOM|INTERNET|الكهرباء|المياه|الاتصالات|موبايلي|زين للاتصالات/,
+  govfee:/CUSTOMS|جمارك|الخدمات الحكوميه|المفوتر قوي|QIWA|MUQEEM|ABSHER|BALADY|\bMOI\b|MHRSD|IQAMA|PASSPORT|JAWAZAT|GOV(ERNMENT)?\s*FEE|مقيم|ابشر|بلدي|جوازات|منصه قوي|رسوم حكوميه|اقامه|مكتب العمل/,
+  penalty:/PENALT|\bFINE\b|VIOLATION|LATE FEE|مخالفه|غرامه/,
+  fee:/\bFEES?\b|\bCHARGES?\b|COMMISSION|\bMDR\b|(?<!ال)رسوم|(?<!ال)عموله|PAY(MADA|VISA|MCCR|GN|AMEX)|اداره نقاط البيع/,
+  gov:/ETIMAD|منصه اعتماد|MINISTRY|وزاره|GOVERNMENT|حكومي|AMANA|امانه/,
+  card:/\bPOS\b|POS\d|MADA|PAY(VISA|MCCR|GN|AMEX)|MERCHANT|SETTLEMENT|GEIDEA|NEOLEAP|SUREPAY|نقاط البيع|مدي|تسويه/,
+  cardSpend:/\bPOS\b|PURCHASE|MADA|\bCARD\b|شراء|مشتريات/,
+  online:/HYPERPAY|MOYASAR|PAYTABS|CHECKOUT|\bTAP\b|AMAZON ?PAY|PAYFORT|STC ?PAY|APPLE ?PAY|GATEWAY|بوابه دفع/,
+  cashDep:/CASH\s*DEP|DEPOSIT MACHINE|\bCDM\b|ATM\s*DEP|ايداع نقدي/,
+  cashWd:/\bATM\b|CASH\s*WITHDRAW|سحب نقدي|صراف/,
+  capex:/MOTORS|AUTOMOTIVE|\bAUTO\b|VEHICLE|\bCARS?\b|EQUIPMENT|MACHINER|معدات|سيارات|اليات/,
+  transfer:/TRANSFER|\bTRF\b|SARIE|\bIPS\b|INSTANT|SWIFT|REMITTANCE|INWARD|OUTWARD|حواله|تحويل/,
+  feeLead:/^\s*(\S+\s+){0,2}(رسوم|عموله|FEES?\b|CHARGES?\b|COMMISSION)|BANK CHARGES|PAY(MADA|VISA|MCCR|GN|AMEX)|اداره نقاط البيع/,
+  supplier:/SUPPLIER|VENDOR|INVOICE|\bBILL PAYMENT\b|BUYING ?GOODS|مورد|فاتوره|شراء بضا/,
+  swift:/SWIFT|INTERNATIONAL|FOREIGN|REMITTANCE|حواله دوليه|خارجيه/
+};
+const NOISE = new Set(('SARIE IPS INSTANT TRANSFER TRF TRANSFERRED INCOMING OUTGOING INWARD OUTWARD FROM PAYMENT PMT REF IBAN LOCAL ONLINE MOBILE BANKING CREDIT DEBIT ACCOUNT ACC THE AND FOR VIA BANK SWIFT REMITTANCE BENEFICIARY FUND OUT SAR BUYING GOODS BUYINGGOODS VALUEDATE ' +
+  'حواله وارده صادره من الي تحويل رقم حساب سداد دفع مبلغ عبر لصالح فوريه محليه داخلي المستفيد عنوان الغرض التحويل بنك مصرف مستخدما القنوات الرقميه للشركات اسم المفوتر الفاتوره الاشتراك مرجع العمليه التاريخ وقت فى في دائن مدين ريال سعودي شراء بضاعه بضائع شركه مؤسسه التجاريه للتجاره التجاره ستحقاق الاستحقاق سعر الصرف السبب لملف ملف العموله الرسوم خلا خلال اون لاين DEAR ' +
+  'الراجحي الاهلي الرياض الانماء البلاد الجزيره ساب العربي الاستثمار الفرنسي الخليج').split(' '));
+const NAME_STOP = new Set('AL EL BIN BINT ABU ABD THE AND FOR CO COMPANY EST ESTABLISHMENT LLC LTD TRADING GROUP CONTRACTING SERVICES شركه مؤسسه للتجاره التجاريه'.split(' '));
+
+function toAsciiDigits(s){ return String(s).replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660)).replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0)).replace(/\u066B/g, '.').replace(/\u066C/g, ','); }
+function normText(s){
+  return toAsciiDigits(String(s == null ? '' : s)).toUpperCase()
+    .replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim();
+}
+function parseNum(v){
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  let s = toAsciiDigits(v).trim(); if (!s) return null;
+  let neg = false;
+  const m = /\b(CR|DR)\.?\s*$/i.exec(s);
+  if (m && m[1].toUpperCase() === 'DR') neg = true;
+  s = s.replace(/\b(CR|DR)\.?\s*$/i, '').replace(/SAR|SR|ر\.س|ريال/gi, '').replace(/\s/g, '');
+  if (/^\(.*\)$/.test(s)) { neg = !neg; s = s.slice(1, -1); }
+  if (s.endsWith('-')) { neg = !neg; s = s.slice(0, -1); }
+  if (s.startsWith('-')) { neg = !neg; s = s.slice(1); }
+  if (s.startsWith('+')) s = s.slice(1);
+  s = s.replace(/,/g, '');
+  if (!/^\d*\.?\d+$/.test(s)) return null;
+  const n = parseFloat(s);
+  return neg ? -n : n;
+}
+const MON3 = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+function dateParts(s){
+  s = toAsciiDigits(s).trim(); let m;
+  if ((m = /^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/.exec(s))) return {y:+m[1], a:+m[2], b:+m[3], kind:'ymd'};
+  if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/.exec(s))) { let y = +m[3]; if (y < 100) y += 2000; return {y, a:+m[1], b:+m[2], kind:'num'}; }
+  if ((m = /^(\d{1,2})[\s\-]([A-Za-z]{3,9})[\s\-,]*(\d{2,4})/.exec(s))) { const mo = MON3.indexOf(m[2].slice(0, 3).toUpperCase()); let y = +m[3]; if (y < 100) y += 2000; if (mo >= 0) return {y, a:+m[1], b:mo + 1, kind:'dmy'}; }
+  if ((m = /^([A-Za-z]{3,9})[\s\-](\d{1,2}),?[\s\-](\d{2,4})/.exec(s))) { const mo = MON3.indexOf(m[1].slice(0, 3).toUpperCase()); let y = +m[3]; if (y < 100) y += 2000; if (mo >= 0) return {y, a:+m[2], b:mo + 1, kind:'dmy'}; }
+  return null;
+}
+function toUTC(cell, dayFirst){
+  if (cell instanceof Date && !isNaN(cell)) return Date.UTC(cell.getFullYear(), cell.getMonth(), cell.getDate());
+  if (typeof cell === 'number' && cell > 20000 && cell < 80000) return (Math.floor(cell) - 25569) * 86400000;
+  const p = dateParts(String(cell == null ? '' : cell)); if (!p) return null;
+  let d, mo;
+  if (p.kind === 'ymd') { mo = p.a; d = p.b; } else if (p.kind === 'dmy') { d = p.a; mo = p.b; } else if (dayFirst) { d = p.a; mo = p.b; } else { mo = p.a; d = p.b; }
+  if (mo < 1 || mo > 12 || d < 1 || d > 31 || p.y < 1990 || p.y > 2100) return null;
+  return Date.UTC(p.y, mo - 1, d);
+}
+const DAY = 86400000;
+const ymKey = t => { const d = new Date(t); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+const fmtDate = t => { const d = new Date(t); return String(d.getUTCDate()).padStart(2, '0') + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };
+const fmtMonth = k => MONTHS[+k.slice(5) - 1] + ' ' + k.slice(0, 4);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const median = a => { if (!a.length) return 0; const b = a.slice().sort((x, y) => x - y), h = b.length >> 1; return b.length % 2 ? b[h] : (b[h - 1] + b[h]) / 2; };
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+
+/* ---- reading the file ---- */
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const first = text.split(/\r?\n/).slice(0, 5).join('\n');
+  const delim = [',', ';', '\t', '|'].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; continue; }
+    if (c === '"') q = true; else if (c === delim) { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(x => String(x).trim() !== ''));
+}
+const HEAD_NORM = {};
+function guessMap(row){
+  if (!HEAD_NORM.date) Object.keys(HEAD_WORDS).forEach(k => { HEAD_NORM[k] = HEAD_WORDS[k].map(w => normText(w).toLowerCase()); });
+  const map = {}, used = new Set();
+  ['value','date','desc','mode','debit','credit','amount','balance','ref','cp','type'].forEach(k => {
+    let best = -1, bestSc = 0;
+    row.forEach((cell, i) => {
+      if (used.has(i)) return;
+      const h = normText(cell).toLowerCase(); if (!h) return;
+      HEAD_NORM[k].forEach(w => { const sc = h === w ? 3 : (w.length >= 4 && h.includes(w)) ? 2 : 0; if (sc > bestSc) { bestSc = sc; best = i; } });
+    });
+    if (best >= 0) { map[k] = best; used.add(best); }
+  });
+  delete map.value;
+  return map;
+}
+function findHeader(rows){
+  for (let i = 0; i < Math.min(40, rows.length); i++) {
+    const m = guessMap(rows[i] || []);
+    const sc = ('date' in m) + ('desc' in m) + (('debit' in m || 'credit' in m || 'amount' in m) ? 1 : 0);
+    if (sc >= 3) return {hdr:i, map:m};
+  }
+  return {hdr:-1, map:{}};
+}
+function buildLines(rows, hdr, map){
+  const body = rows.slice(hdr + 1);
+  let dayFirst = null;
+  if (map.date != null) {
+    for (const r of body) { const c = r[map.date]; if (typeof c !== 'string') continue; const p = dateParts(c); if (!p || p.kind !== 'num') continue; if (p.a > 12) { dayFirst = true; break; } if (p.b > 12) { dayFirst = false; break; } }
+  }
+  if (dayFirst === null) dayFirst = true;
+  const lines = []; let opening = null, skipped = 0;
+  body.forEach((r, k) => {
+    const g = key => map[key] != null ? r[map[key]] : null;
+    const desc = String(g('desc') == null ? '' : g('desc')).trim();
+    const t = map.date != null ? toUTC(g('date'), dayFirst) : null;
+    const bal = parseNum(g('balance'));
+    if (/OPENING|BROUGHT FORWARD|B\/F|رصيد افتتاحي|الرصيد السابق/i.test(normText(desc)) && bal != null) { opening = bal; return; }
+    if (t == null) { skipped++; return; }
+    let dr = 0, cr = 0;
+    if (map.debit != null || map.credit != null) { dr = Math.abs(parseNum(g('debit')) || 0); cr = Math.abs(parseNum(g('credit')) || 0); }
+    if (!dr && !cr && map.amount != null) {
+      const a = parseNum(g('amount')) || 0, ty = normText(g('type'));
+      if (ty) { if (/DR|DEBIT|مدين|سحب/.test(ty)) dr = Math.abs(a); else cr = Math.abs(a); } else if (a < 0) dr = -a; else cr = a;
+    }
+    if (!dr && !cr) { skipped++; return; }
+    lines.push({k, t, desc, mode:String(g('mode') == null ? '' : g('mode')).trim(), ref:String(g('ref') == null ? '' : g('ref')), cpRaw:String(g('cp') == null ? '' : g('cp')), dr, cr, bal, flags:{}});
+  });
+  return {lines, opening, skipped, dayFirst};
+}
+function cpKey(s){
+  let u = normText(s).replace(/SA\d{2}[0-9A-Z]{10,30}/g, ' ').replace(/\d[\d\/\-:.]{3,}/g, ' ').replace(/[^A-Z\u0600-\u06FF ]/g, ' ');
+  return u.split(' ').filter(w => w.length >= 3 && !NOISE.has(w)).slice(0, 3).join(' ');
+}
+function nameMatcher(list){
+  const names = list.map(n => normText(n).replace(/[^A-Z\u0600-\u06FF ]/g, ' ').split(' ').filter(w => w.length >= 3 && !NAME_STOP.has(w))).filter(t => t.length);
+  return u => names.some(toks => toks.every(w => u.includes(w)));
+}
+function splitList(s){ return String(s || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean); }
+
+/* ---- categorisation ---- */
+function categorise(lines, ctx){
+  const isOwn = u => ctx.accounts.some(a => u.replace(/\s/g, '').includes(a)) || ctx.biz(u);
+  lines.forEach(l => {
+    l.U = normText(l.desc + ' ' + (l.mode || '') + ' ' + l.cpRaw);
+    l.cp = l.cpRaw ? cpKey(l.cpRaw) : cpKey(l.desc);
+    const u = l.U, set = (c, why) => { l.cat = c; l.why = why; };
+    if (RX.returned.test(u)) l.flags.returned = true;
+    if (l.cr > 0) {
+      if (l.flags.returned || RX.reversal.test(u) || RX.refund.test(u)) return set('CR-REF', l.flags.returned ? 'Returned item' : 'Reversal or refund wording');
+      if (isOwn(u)) return set('CR-INT', 'Matches the business’s own account or name');
+      if (ctx.owner(u)) return set('CR-OWNER', 'Matches an owner’s name');
+      if (ctx.related(u)) return set('CR-REL', 'Matches a related company');
+      if (ctx.lender(u) || RX.fin.test(u)) return set('CR-FIN', 'Lender name or financing wording');
+      if (RX.bnpl.test(u)) return set('CR-BNPL', 'BNPL provider name');
+      if (RX.online.test(u)) return set('CR-ONLINE', 'Payment gateway name');
+      if (RX.card.test(u)) return set('CR-CARD', 'Card settlement wording');
+      if (RX.cashDep.test(u)) return set('CR-CASH', 'Cash deposit wording');
+      if (RX.gov.test(u)) return set('CR-GOV', 'Government payer wording');
+      if (RX.transfer.test(u) || l.cpRaw) return set('CR-CUST', 'Transfer from a named party');
+      return set('CR-OTHER', 'No rule matched');
+    }
+    if (l.flags.returned && !RX.fee.test(u)) return set('DR-RET', 'Returned item');
+    if (RX.reversal.test(u) || RX.refund.test(u)) return set('DR-RET', 'Reversal or refund paid');
+    if (isOwn(u)) return set('DR-INT', 'Matches the business’s own account or name');
+    if (ctx.owner(u)) return set('DR-OWNER', 'Matches an owner’s name');
+    if (ctx.related(u)) return set('DR-REL', 'Matches a related company');
+    if (RX.bnpl.test(u)) return set('DR-BNPL', 'BNPL provider name');
+    if (ctx.lender(u) || RX.emi.test(u)) return set('DR-EMI', 'Lender name or instalment wording');
+    if (RX.feeVat.test(u)) return set('DR-FEE', 'VAT on a bank or card-processing fee');
+    if (/CUSTOMS|جمارك/.test(u)) return set('DR-GOVFEE', 'Customs payment: import VAT and duties');
+    if (RX.tax.test(u)) return set('DR-TAX', 'Zakat or income tax wording');
+    if (RX.vat.test(u)) return set('DR-VAT', 'ZATCA or VAT wording');
+    if (RX.gosi.test(u)) return set('DR-GOSI', 'GOSI wording');
+    if (RX.pay.test(u)) return set('DR-PAY', 'Payroll wording');
+    if (RX.rent.test(u)) return set('DR-RENT', 'Rent or Ejar wording');
+    if (RX.util.test(u)) return set('DR-UTIL', 'Utility or telecom biller');
+    if (RX.govfee.test(u)) return set('DR-GOVFEE', 'Government fee wording');
+    if (RX.penalty.test(u)) { l.flags.penalty = true; return set('DR-FEE', 'Penalty or fine wording'); }
+    if (RX.fee.test(u) && (!RX.transfer.test(u) || RX.feeLead.test(u))) return set('DR-FEE', /PAY(MADA|VISA|MCCR|GN|AMEX)|اداره نقاط البيع/.test(u) ? 'Card-processing (merchant) fee' : 'Fee or charge wording');
+    if (RX.cashWd.test(u)) return set('DR-CASH', 'Cash withdrawal wording');
+    if (RX.capex.test(u)) return set('DR-CAPEX', 'Vehicle or equipment seller');
+    if (RX.cardSpend.test(u) && !RX.transfer.test(u)) return set('DR-CARD', 'Card purchase wording');
+    if (RX.supplier.test(u)) return set('DR-SUP', 'Supplier or invoice wording');
+    if (RX.transfer.test(u) || l.cpRaw) return set('DR-SUP', 'Transfer to a named party');
+    return set('DR-OTHER', 'No rule matched');
+  });
+}
+
+/* ---- pattern pass: recurring instalments, circular pairs, duplicates ---- */
+function patternPass(lines){
+  const groups = {};
+  lines.filter(l => (l.cat === 'DR-SUP' || l.cat === 'DR-OTHER') && l.cp).forEach(l => { (groups[l.cp] = groups[l.cp] || []).push(l); });
+  Object.values(groups).forEach(g => {
+    g.sort((a, b) => a.dr - b.dr);
+    let i = 0;
+    while (i < g.length) {
+      let j = i + 1; while (j < g.length && g[j].dr <= g[i].dr * 1.01) j++;
+      const c = g.slice(i, j), months = new Set(c.map(l => ymKey(l.t)));
+      const days = c.map(l => new Date(l.t).getUTCDate());
+      if (months.size >= 3 && months.size === c.length && Math.max(...days) - Math.min(...days) <= 6)
+        c.forEach(l => { l.cat = 'DR-EMI'; l.why = 'Same amount on about the same day for ' + months.size + ' months: possible instalment, review'; l.flags.patternEMI = true; });
+      i = j;
+    }
+  });
+  const credits = lines.filter(l => l.cr > 0 && (l.cat === 'CR-CUST' || l.cat === 'CR-OTHER') && l.cp);
+  lines.filter(l => l.dr >= 1000 && (l.cat === 'DR-SUP' || l.cat === 'DR-OTHER') && l.cp).forEach(d => {
+    const m = credits.find(c => !c.flags.circular && c.cp === d.cp && c.t > d.t - 1 && c.t <= d.t + 7 * DAY && Math.abs(c.cr - d.dr) <= 0.1 * d.dr);
+    if (m) { m.flags.circular = true; d.flags.circular = true; m.pair = d; }
+  });
+  const seen = {};
+  lines.forEach(l => {
+    if (l.cat === 'CR-CARD' || l.cat === 'DR-FEE') return;
+    const refs = (normText(l.desc + ' ' + l.ref).match(/\d{6,}/g) || []).sort((a, c) => c.length - a.length);
+    const key = (l.cr > 0 ? 'c' : 'd') + '|' + (l.cr || l.dr).toFixed(2) + '|' + (l.cp || l.U.slice(0, 30));
+    const prev = seen[key];
+    if (prev && l.t - prev.t <= 2 * DAY && (!refs.length || !prev.refs.length || refs[0] === prev.refs[0])) { l.flags.duplicate = true; l.pair = prev; }
+    l.refs = refs;
+    seen[key] = Object.assign(l, {refs:l.refs || []});
+  });
+}
+
+/* ---- the analysis ---- */
+function analyseStatement(rows, hdr, map, ctxIn){
+  const res = {warnings:[], flags:[]};
+  const b = buildLines(rows, hdr, map);
+  let lines = b.lines; res.skipped = b.skipped;
+  if (lines.length < 10) { res.error = 'Fewer than 10 transactions could be read. Check the column mapping, or that the dates are Gregorian.'; return res; }
+  if (lines[0].t > lines[lines.length - 1].t) lines.reverse();
+  lines = lines.map((l, i) => Object.assign(l, {o:i})).sort((a, c) => a.t - c.t || a.o - c.o);
+  // balance chain (F2), reordering within a day where the bank sorts differently
+  const withBal = lines.filter(l => l.bal != null).length;
+  res.hasBal = withBal >= lines.length * 0.8;
+  const breaks = [];
+  if (res.hasBal) {
+    const ordered = []; let prev = null, i = 0;
+    while (i < lines.length) {
+      let j = i; while (j < lines.length && lines[j].t === lines[i].t) j++;
+      const grp = lines.slice(i, j);
+      if (prev === null) { const f = grp[0]; prev = f.bal != null ? f.bal - f.cr + f.dr : null; }
+      while (grp.length) {
+        let idx = grp.findIndex(l => l.bal != null && prev != null && Math.abs(prev + l.cr - l.dr - l.bal) < 0.011);
+        if (idx < 0) idx = 0;
+        const l = grp.splice(idx, 1)[0]; ordered.push(l);
+        if (l.bal != null) { if (prev != null && Math.abs(prev + l.cr - l.dr - l.bal) >= 0.011) breaks.push(l); prev = l.bal; } else if (prev != null) prev += l.cr - l.dr;
+      }
+      i = j;
+    }
+    lines = ordered;
+  }
+  res.breaks = breaks;
+  const ctx = {accounts:ctxIn.accounts.map(a => toAsciiDigits(a).replace(/\D/g, '')).filter(a => a.length >= 6),
+    biz:nameMatcher(ctxIn.business ? [ctxIn.business] : []), owner:nameMatcher(ctxIn.owners), related:nameMatcher(ctxIn.related), lender:nameMatcher(ctxIn.lenders)};
+  categorise(lines, ctx);
+  patternPass(lines);
+  res.lines = lines;
+  const first = lines[0].t, last = lines[lines.length - 1].t;
+  res.first = first; res.last = last;
+  // months and aggregates
+  const calMk = [];
+  for (let d = new Date(first); d.getTime() <= last; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))) calMk.push(ymKey(d.getTime()));
+  const isFull = p => first <= p.s + 3 * DAY && last >= p.e - 3 * DAY;
+  let periods = calMk.map(k => { const y = +k.slice(0, 4), mo = +k.slice(5) - 1; return {k, s:Date.UTC(y, mo, 1), e:Date.UTC(y, mo + 1, 1) - DAY, label:fmtMonth(k)}; });
+  res.rolling = false;
+  if (periods.filter(isFull).length < 3 && last - first >= 59 * DAY) {
+    // a statement that runs mid-month to mid-month: use months counted from its first day
+    const f = new Date(first), y0 = f.getUTCFullYear(), m0 = f.getUTCMonth(), d0 = Math.min(28, f.getUTCDate());
+    periods = [];
+    for (let i = 0; i < 40; i++) { const ps = Date.UTC(y0, m0 + i, d0), pe = Date.UTC(y0, m0 + i + 1, d0) - DAY; if (ps > last) break; periods.push({k:'P' + String(i).padStart(2, '0'), s:ps, e:pe, label:fmtDate(ps) + ' to ' + fmtDate(Math.min(pe, last))}); }
+    res.rolling = true;
+  }
+  const pk = t => { for (const p of periods) if (t >= p.s && t <= p.e) return p.k; return t < periods[0].s ? periods[0].k : periods[periods.length - 1].k; };
+  const mk = periods.map(p => p.k);
+  res.periodLabel = {}; periods.forEach(p => { res.periodLabel[p.k] = p.label; });
+  const M = {};
+  mk.forEach(k => { M[k] = {k, G:0, salesGross:0, ret:0, circ:0, dup:0, rel:0, O:0, draw:0, tax:0, emi:0, capex:0, endBal:null, n:0, salesN:0, largest:0, card:0, online:0, bnpl:0, cust:0, gov:0, cash:0, unkIn:0, unkOut:0, out:0, salesItems:[]}; });
+  const byCat = {};
+  lines.forEach(l => {
+    const m = M[pk(l.t)]; m.n++;
+    const c = byCat[l.cat] = byCat[l.cat] || {n:0, in:0, out:0}; c.n++; c.in += l.cr; c.out += l.dr;
+    if (l.cr > 0) {
+      m.G += l.cr;
+      if (SALES_CODES.includes(l.cat)) {
+        m.salesGross += l.cr;
+        if (l.flags.circular) m.circ += l.cr; else if (l.flags.duplicate) m.dup += l.cr;
+        else { m.salesN++; m.largest = Math.max(m.largest, l.cr); m[{'CR-CARD':'card','CR-ONLINE':'online','CR-BNPL':'bnpl','CR-CUST':'cust','CR-GOV':'gov','CR-CASH':'cash'}[l.cat]] += l.cr; if (l.cat === 'CR-CUST') m.salesItems.push(l.cr); }
+      }
+      if (l.cat === 'CR-REL') m.rel += l.cr;
+      if (l.cat === 'CR-OTHER') m.unkIn += l.cr;
+    } else {
+      m.out += l.dr;
+      if (OPS_CODES.includes(l.cat) && !l.flags.circular && !l.flags.duplicate) m.O += l.dr;
+      if (l.cat === 'DR-OTHER') m.unkOut += l.dr;
+      if (l.cat === 'DR-RET') m.ret += l.dr;
+      if (l.cat === 'DR-OWNER' || l.cat === 'DR-REL') m.draw += l.dr;
+      if (l.cat === 'DR-TAX') m.tax += l.dr;
+      if (l.cat === 'DR-EMI' || l.cat === 'DR-BNPL') m.emi += l.dr;
+      if (l.cat === 'DR-CAPEX') m.capex += l.dr;
+    }
+    if (l.bal != null) m.endBal = l.bal;
+  });
+  const Ms = mk.map(k => M[k]);
+  Ms.forEach(m => {
+    const net = m.salesGross - m.circ - m.dup - m.ret;
+    m.share = net > 0 ? m.largest / net : 0;
+    m.oneOff = Math.max(0, m.share - 0.4) * Math.max(0, net);
+    m.T = Math.max(0, net - m.oneOff);
+    m.cfads = m.T - m.O - 0.6 * m.draw - m.tax;
+  });
+  // partial first and last months are kept for totals but left out of monthly averages
+  const full = periods.filter(isFull).map(p => M[p.k]);
+  const use = full.length >= 3 ? full : Ms;
+  res.months = Ms; res.useMonths = use; res.byCat = byCat;
+  const n = use.length;
+  const sum = f => use.reduce((a, m) => a + f(m), 0);
+  const T = sum(m => m.T), O = sum(m => m.O), draw = sum(m => m.draw), salesNet = sum(m => m.salesGross - m.circ - m.dup - m.ret);
+  const totalIn = lines.reduce((a, l) => a + l.cr, 0), totalOut = lines.reduce((a, l) => a + l.dr, 0);
+  const unkIn = (byCat['CR-OTHER'] || {in:0}).in, unkOut = (byCat['DR-OTHER'] || {out:0}).out;
+  const D = {};
+  D.months = n; D.avgT = T / n; D.avgO = O / n;
+  D.margin = T > 0 ? (T - O) / T : 0;
+  D.draws = (T - O) > 0 ? Math.min(1, draw / (T - O)) : (draw > 0 ? 1 : 0);
+  D.emi = sum(m => m.emi) / n;
+  D.burden = D.avgT > 0 ? D.emi / D.avgT : 0;
+  D.T0 = sum(m => m.salesGross - m.dup - m.ret + m.rel) / n;
+  D.circ = D.T0 > 0 ? sum(m => m.circ) / n / D.T0 : 0;
+  D.rel = D.T0 > 0 ? sum(m => m.rel) / n / D.T0 : 0;
+  D.largest = Math.max(...use.map(m => m.share));
+  const Ts = use.map(m => m.T);
+  D.cv = mean(Ts) > 0 ? Math.sqrt(mean(Ts.map(x => (x - mean(Ts)) ** 2))) / mean(Ts) : 0;
+  const pos = use.map((m, i) => [i, m.T]).filter(p => p[1] > 0);
+  if (pos.length >= 3) {
+    const xs = pos.map(p => p[0]), ys = pos.map(p => Math.log(p[1])), xb = mean(xs), yb = mean(ys);
+    const bslope = xs.reduce((a, x, i) => a + (x - xb) * (ys[i] - yb), 0) / xs.reduce((a, x) => a + (x - xb) ** 2, 0);
+    D.growth = Math.exp(12 * bslope) - 1;
+  } else D.growth = 0;
+  D.delta3 = n >= 6 ? (Ts.slice(-3).reduce((a, x) => a + x, 0) / Math.max(1, Ts.slice(-6, -3).reduce((a, x) => a + x, 0))) - 1 : null;
+  if (n >= 12) { const idx = use.map(m => m.T / mean(Ts)); const mx = Math.max(...idx); D.swing = mx - 1; D.peak = +use[idx.indexOf(mx)].k.slice(5) - 1; } else { D.swing = 0; D.peak = null; }
+  // payers (R5, R10-ready)
+  const payers = {};
+  lines.filter(l => (l.cat === 'CR-CUST' || l.cat === 'CR-GOV') && !l.flags.circular && !l.flags.duplicate).forEach(l => { const p = payers[l.cp || '(unnamed)'] = payers[l.cp || '(unnamed)'] || {sum:0, n:0, months:new Set(), gov:l.cat === 'CR-GOV'}; p.sum += l.cr; p.n++; p.months.add(pk(l.t)); });
+  const plist = Object.entries(payers).sort((a, c) => c[1].sum - a[1].sum);
+  D.top = salesNet > 0 && plist.length ? plist[0][1].sum / salesNet : 0;
+  D.topName = plist.length ? plist[0][0] : '';
+  D.hhi = salesNet > 0 ? plist.reduce((a, p) => a + (p[1].sum / salesNet) ** 2, 0) : 0;
+  const half = use.length >> 1, firstHalf = new Set(use.slice(0, half).map(m => m.k)), secondHalf = new Set(use.slice(half).map(m => m.k));
+  const regular = plist.filter(p => [...p[1].months].filter(k => firstHalf.has(k)).length >= 2);
+  D.churn = regular.length ? regular.filter(p => ![...p[1].months].some(k => secondHalf.has(k))).length / regular.length : 0;
+  const govShare = salesNet > 0 ? plist.filter(p => p[1].gov).reduce((a, p) => a + p[1].sum, 0) / salesNet : 0;
+  D.payer = govShare >= 0.3 ? 'government' : D.top >= 0.3 ? 'corporate' : 'individuals';
+  const ch = k => salesNet > 0 ? sum(m => m[k]) / salesNet : 0;
+  D.mix = {card:ch('card'), online:ch('online'), bnpl:ch('bnpl'), cust:ch('cust'), gov:ch('gov'), cash:ch('cash')};
+  // inflow day (S1): the day of the month with the most sales on average
+  const byDay = new Array(32).fill(0);
+  lines.filter(l => SALES_CODES.includes(l.cat) && !l.flags.circular).forEach(l => { byDay[new Date(l.t).getUTCDate()] += l.cr; });
+  D.inflowDay = Math.min(28, byDay.indexOf(Math.max(...byDay.slice(1))) || 1);
+  // daily balances
+  const daily = [];
+  if (res.hasBal) {
+    let bal = lines[0].bal - lines[0].cr + lines[0].dr, li = 0;
+    for (let t = first; t <= last; t += DAY) { while (li < lines.length && lines[li].t <= t) { if (lines[li].bal != null) bal = lines[li].bal; else bal += lines[li].cr - lines[li].dr; li++; } daily.push({t, bal}); }
+  }
+  res.daily = daily;
+  D.negDays = daily.filter(d => d.bal < 0).length;
+  D.avgBal = daily.length ? mean(daily.map(d => d.bal)) : null;
+  D.dcoh = D.avgBal != null && O > 0 ? D.avgBal / (O / (n * 30.4)) : null;
+  let peakBal = -Infinity, dd = 0;
+  daily.forEach(d => { peakBal = Math.max(peakBal, d.bal); if (peakBal > 0) dd = Math.max(dd, (peakBal - d.bal) / peakBal); });
+  D.drawdown = dd;
+  // returned items (B1), events merged by day
+  D.bounces = new Set(lines.filter(l => l.flags.returned).map(l => l.t)).size;
+  // EMI conduct (B2): late or missing months per instalment series
+  const series = {};
+  lines.filter(l => l.cat === 'DR-EMI').forEach(l => { const key = (l.cp || 'EMI') + '|' + Math.round(l.dr / 100); (series[key] = series[key] || []).push(l); });
+  let late = 0; const drift = [];
+  Object.values(series).forEach(s => {
+    if (s.length < 3) return;
+    const usual = median(s.map(l => new Date(l.t).getUTCDate()));
+    s.forEach(l => { if (Math.abs(new Date(l.t).getUTCDate() - usual) > 3) late++; });
+    const ms = new Set(s.map(l => pk(l.t))), ks = mk.slice(mk.indexOf(pk(s[0].t)), mk.indexOf(pk(s[s.length - 1].t)) + 1);
+    late += ks.filter(k => !ms.has(k)).length;
+  });
+  D.missed = late;
+  // recurring amounts drifting (rent, payroll, GOSI, utilities, instalments)
+  const rec = {};
+  lines.filter(l => ['DR-EMI','DR-RENT','DR-GOSI','DR-PAY'].includes(l.cat)).forEach(l => { const key = l.cat + '|' + (l.cp || ''); (rec[key] = rec[key] || []).push(l); });
+  Object.values(rec).forEach(s => { for (let i = 1; i < s.length; i++) { const ch2 = s[i].dr / s[i - 1].dr - 1; if (Math.abs(ch2) > 0.05 && Math.abs(ch2) < 0.5) drift.push({l:s[i], ch:ch2}); } });
+  // F4 Benford and round amounts
+  const amts = lines.filter(l => !['DR-FEE','CR-CARD','CR-ONLINE','CR-BNPL'].includes(l.cat)).map(l => l.cr || l.dr).filter(a => a >= 10);
+  const counts = new Array(10).fill(0); amts.forEach(a => { counts[+String(Math.floor(a)).replace(/^0+/, '')[0]]++; });
+  D.benfordN = amts.length;
+  D.mad = amts.length ? mean([1,2,3,4,5,6,7,8,9].map(d => Math.abs(counts[d] / amts.length - Math.log10(1 + 1 / d)))) : 0;
+  const bigSales = lines.filter(l => ['CR-CUST','CR-GOV'].includes(l.cat) && l.cr >= 1000);
+  D.round = bigSales.length ? bigSales.filter(l => l.cr % 1000 === 0).length / bigSales.length : 0;
+  // F6 circular, F5 duplicates
+  D.dups = lines.filter(l => l.flags.duplicate);
+  D.circLines = lines.filter(l => l.flags.circular && l.cr > 0);
+  // F7 month-end spikes and big deposits withdrawn quickly
+  const spikeMonths = [];
+  if (daily.length) calMk.forEach(k => {
+    const ds = daily.filter(d => ymKey(d.t) === k); if (ds.length < 20) return;
+    const endDays = ds.slice(-3), rest = ds.slice(0, -3), r = mean(rest.map(d => d.bal));
+    if (r > 0 && mean(endDays.map(d => d.bal)) / r >= 2) spikeMonths.push(k);
+  });
+  const quick = [];
+  lines.filter(l => l.cr > 0 && SALES_CODES.includes(l.cat)).forEach(l => {
+    const m = M[pk(l.t)]; if (!m.T || l.cr < 0.2 * m.T) return;
+    const outAfter = lines.filter(o => o.dr > 0 && o.t > l.t - 1 && o.t <= l.t + 5 * DAY && o.cat !== 'DR-FEE').reduce((a, o) => a + o.dr, 0);
+    if (outAfter >= 0.8 * l.cr) quick.push(l);
+  });
+  D.spikeMonths = spikeMonths; D.quick = quick;
+  // F8 pass-through
+  let ptIn = 0, ptOut = 0;
+  lines.forEach((l, i) => {
+    if (!(l.cr >= 1000) || l.cat === 'CR-INT' || l.cat === 'CR-REF') return;
+    ptIn += l.cr;
+    if (res.hasBal && l.bal != null) {
+      const before = l.bal - l.cr + l.dr; let low = l.bal;
+      for (let j = i + 1; j < lines.length && lines[j].t <= l.t + 2 * DAY; j++) if (lines[j].bal != null) low = Math.min(low, lines[j].bal);
+      if (before < 0.5 * l.cr && low - before < 0.2 * l.cr) ptOut += l.cr;
+    } else {
+      let s = 0; for (let j = i + 1; j < lines.length && lines[j].t <= l.t + 2 * DAY; j++) if (lines[j].dr > 0 && lines[j].cat !== 'DR-FEE') s += lines[j].dr;
+      if (s >= 0.8 * l.cr) ptOut += l.cr;
+    }
+  });
+  D.pass = ptIn > 0 ? ptOut / ptIn : 0;
+  // F10 dormancy then surge; F12 coverage gaps; R7 activity
+  D.surge = n >= 9 ? mean(Ts.slice(-3)) / Math.max(1, mean(Ts.slice(0, 6))) : null;
+  const missingMonths = Ms.filter(m => m.n === 0).map(m => m.k);
+  let maxGap = 0, gapAt = null;
+  for (let i = 1; i < lines.length; i++) { const g = (lines[i].t - lines[i - 1].t) / DAY; if (g > maxGap) { maxGap = g; gapAt = lines[i - 1].t; } }
+  const salesDays = [...new Set(lines.filter(l => SALES_CODES.includes(l.cat)).map(l => l.t))].sort((a, c) => a - c);
+  let salesGap = 0; for (let i = 1; i < salesDays.length; i++) salesGap = Math.max(salesGap, (salesDays[i] - salesDays[i - 1]) / DAY - 1);
+  D.salesGap = salesGap; D.activeDays = mean(use.map(m => new Set(lines.filter(l => SALES_CODES.includes(l.cat) && pk(l.t) === m.k).map(l => l.t)).size));
+  // R8 ticket size and volume shifts
+  const shifts = [];
+  use.forEach((m, i) => {
+    if (i < 3) return;
+    const prior = use.slice(i - 3, i);
+    const medNow = median(m.salesItems), medPrior = median([].concat(...prior.map(p => p.salesItems)));
+    if (m.salesItems.length >= 4 && [].concat(...prior.map(p => p.salesItems)).length >= 8 && medPrior > 0 && Math.abs(medNow / medPrior - 1) > 0.5) shifts.push({k:m.k, what:'Typical customer payment', from:medPrior, to:medNow});
+    const nPrior = mean(prior.map(p => p.salesN));
+    if (nPrior >= 5 && Math.abs(m.salesN / nPrior - 1) > 0.5) shifts.push({k:m.k, what:'Number of sales receipts', from:nPrior, to:m.salesN, count:true});
+  });
+  D.shifts = shifts; D.drift = drift;
+  // outliers: robust z-scores within each category
+  const outl = [];
+  const byC = {};
+  lines.forEach(l => { const a = l.cr || l.dr; (byC[l.cat] = byC[l.cat] || []).push([l, a]); });
+  Object.entries(byC).forEach(([c, arr]) => {
+    if (arr.length < 8 || c === 'DR-FEE') return;
+    const med = median(arr.map(x => x[1])), mad = median(arr.map(x => Math.abs(x[1] - med)));
+    if (mad <= 0) return;
+    arr.forEach(([l, a]) => { const z = 0.6745 * (a - med) / mad; if (Math.abs(z) > 3.5) outl.push({l, z, med}); });
+  });
+  D.outliers = outl.sort((a, c) => Math.abs(c.z) - Math.abs(a.z)).slice(0, 15);
+  D.unkIn = totalIn > 0 ? unkIn / totalIn : 0; D.unkOut = totalOut > 0 ? unkOut / totalOut : 0;
+  D.uncat = (totalIn + totalOut) > 0 ? (unkIn + unkOut) / (totalIn + totalOut) : 0;
+  D.missingMonths = missingMonths; D.maxGap = maxGap; D.gapAt = gapAt;
+  D.patternEMI = lines.filter(l => l.flags.patternEMI).length;
+  const COMPANY = /شركه|مؤسسه|مصنع|مكتب|\bCO\b|\bEST\b|LLC|LTD|TRADING|COMPANY|FACTORY|CORP/;
+  const indiv = {};
+  lines.filter(l => l.cat === 'DR-SUP' && l.dr >= 10000 && l.cp && !COMPANY.test(normText(l.desc))).forEach(l => { const p = indiv[l.cp] = indiv[l.cp] || {sum:0, n:0}; p.sum += l.dr; p.n++; });
+  D.indiv = Object.entries(indiv).sort((a, c) => c[1].sum - a[1].sum); D.indivSum = D.indiv.reduce((a, x) => a + x[1].sum, 0);
+  D.swiftIn = lines.filter(l => l.cr > 0 && RX.swift.test(l.U)).reduce((a, l) => a + l.cr, 0);
+  res.D = D; res.totalIn = totalIn; res.totalOut = totalOut;
+
+  // ---- flags ----
+  const F = res.flags, ex = arr => arr.slice(0, 3);
+  const add = (sev, code, node, title, detail, examples) => F.push({sev, code, node, title, detail, examples:examples || []});
+  if (res.hasBal) {
+    if (breaks.length > lines.length * 0.5) add('info', 'F2', 'n_doc', 'Balance column does not reconcile', 'Most lines do not add up, which usually means the balance column is mapped wrongly. Check the column mapping.');
+    else if (breaks.length) add('hard', 'F2', 'n_doc', 'Running balance breaks on ' + breaks.length + ' line' + (breaks.length > 1 ? 's' : ''), 'Opening balance plus credits minus debits does not equal the balance shown. If this file came straight from the bank, amounts may have been edited.', ex(breaks));
+    else add('pass', 'F2', 'n_doc', 'Running balance adds up on every line', '');
+  } else add('info', 'F2', 'n_doc', 'No balance column', 'Balance checks (F2, C5, C6, C7, F7, S1) need a balance column.');
+  if (D.bounces >= 4) add('hard', 'B1', 'n_cond', D.bounces + ' returned or bounced payments', 'Four or more in 12 months is a knock-out.', ex(lines.filter(l => l.flags.returned)));
+  else if (D.bounces) add('soft', 'B1', 'n_cond', D.bounces + ' returned or bounced payment' + (D.bounces > 1 ? 's' : ''), 'Below the knock-out of four, but it lowers the conduct score.', ex(lines.filter(l => l.flags.returned)));
+  if (D.negDays > 30) add('hard', 'C6', 'n_od', D.negDays + ' days below zero', 'More than 30 is a knock-out.');
+  else if (D.negDays) add('soft', 'C6', 'n_od', D.negDays + ' day' + (D.negDays > 1 ? 's' : '') + ' below zero', 'Lowers the capacity score.');
+  if (D.circ > 0.1) add('soft', 'F6', 'n_pat', 'Circular flows: ' + pct(D.circ) + ' of sales', 'Money sent to a party came back from the same party within 7 days. Removed from turnover.', ex(D.circLines));
+  else if (D.circLines.length) add('info', 'F6', 'n_pat', D.circLines.length + ' circular pair' + (D.circLines.length > 1 ? 's' : '') + ' removed from turnover', 'Under the 10% flag line.', ex(D.circLines));
+  if (D.dups.length) add('soft', 'F5', 'n_pat', D.dups.length + ' possible duplicate' + (D.dups.length > 1 ? 's' : ''), 'Same amount and description within two days. Duplicate credits are left out of turnover.', ex(D.dups));
+  if (spikeMonths.length >= 3 || quick.length) add('soft', 'F7', 'n_pat', 'Balance dressing', (spikeMonths.length ? 'Month-end balance at least double the rest of the month in ' + spikeMonths.length + ' month' + (spikeMonths.length > 1 ? 's' : '') + '. ' : '') + (quick.length ? quick.length + ' large deposit' + (quick.length > 1 ? 's' : '') + ' withdrawn within 5 days.' : ''), ex(quick));
+  if (D.pass > 0.7) add('soft', 'F8', 'n_pat', pct(D.pass) + ' of money in passes straight through', 'Landed in a near-empty account and left within 48 hours. Above 70% suggests money passing through rather than trading.');
+  if (D.benfordN >= 300 && D.mad > 0.015) add('soft', 'F4', 'n_pat', 'Amounts stray from Benford’s pattern', 'Mean absolute deviation ' + D.mad.toFixed(3) + ', above 0.015, across ' + D.benfordN + ' typed amounts (fees and card settlements left out).');
+  else if (D.benfordN >= 300) add('pass', 'F4', 'n_pat', 'Amounts follow Benford’s pattern', 'Mean absolute deviation ' + D.mad.toFixed(3) + ' across ' + D.benfordN + ' typed amounts.');
+  else if (D.benfordN) add('info', 'F4', 'n_pat', 'Too few typed amounts for the Benford test', D.benfordN + ' transfers and deposits; the test needs at least 300. Fees and card settlements are left out because the bank or the till sets them.');
+  if (D.round > 0.3 && bigSales.length >= 10) add('soft', 'F4', 'n_pat', pct(D.round) + ' of customer receipts are exact thousands', 'Above 30% (proposed) suggests made-up figures.');
+  if (D.surge != null && D.surge > 3) add('soft', 'F10', 'n_pat', 'Activity surged ' + D.surge.toFixed(1) + '× after a quiet start', 'Recent three months against the first six.');
+  if (missingMonths.length || maxGap > 10) add('soft', 'F12', 'n_doc', 'Coverage gap', (missingMonths.length ? 'No transactions in ' + missingMonths.map(k => res.periodLabel[k]).join(', ') + '. ' : '') + (maxGap > 10 ? 'Longest run without any line: ' + Math.round(maxGap) + ' days from ' + fmtDate(gapAt) + '.' : ''));
+  if (D.largest > 0.4) add('info', 'C8', 'x_ext', 'One receipt was ' + pct(D.largest) + ' of its month', 'The part above 40% is treated as one-off and left out of turnover.');
+  shifts.slice(0, 4).forEach(s => add('soft', 'R8', 'n_act', s.what + ' shifted in ' + res.periodLabel[s.k], (s.count ? Math.round(s.from) + ' a month on average, then ' + s.to : fmtSAR(s.from) + ' typical, then ' + fmtSAR(s.to)) + ': a change of more than 50% against the previous three months.'));
+  if (drift.length) add('info', 'B2', 'n_cond', drift.length + ' change' + (drift.length > 1 ? 's' : '') + ' in recurring payments', 'Rent, payroll, GOSI or instalments that changed by more than 5% from the previous payment.', ex(drift.map(d => d.l)));
+  if (D.missed) add(D.missed >= 3 ? 'hard' : 'soft', 'B2', 'n_cond', D.missed + ' late or missing instalment' + (D.missed > 1 ? 's' : ''), 'Instalments more than 3 days from their usual day, or months with none.');
+  if (D.outliers.length) add('info', 'Outliers', 'x_ext', D.outliers.length + ' transaction' + (D.outliers.length > 1 ? 's' : '') + ' far out of line for their category', 'Robust z-score above 3.5 against the category’s median. Listed below.');
+  if (D.salesGap > 14) add('soft', 'R7', 'n_act', 'No sales for ' + D.salesGap + ' days in a row', 'Long silent stretches point to a closed, seasonal or shell business.');
+  if (D.burden > 0.35) add('hard', 'C4', 'n_dscr', 'Existing instalments take ' + pct(D.burden) + ' of turnover', 'Above 35% is a knock-out.');
+  if (D.patternEMI) add('info', 'CAT', 'n_cat', D.patternEMI + ' payment' + (D.patternEMI > 1 ? 's' : '') + ' treated as possible instalments', 'Same amount on about the same day for three months or more, with no lender name. Counted as instalments to be safe; review them.');
+  if (D.indiv.length) add('info', 'CAT', 'n_cat', fmtSAR(D.indivSum) + ' of transfers went to ' + D.indiv.length + ' individual' + (D.indiv.length > 1 ? 's' : ''), 'Transfers of SAR 10,000 or more to people rather than companies, counted as supplier payments. If any are owners or partners, add their names under Who is who so they count as drawings. Largest: ' + D.indiv.slice(0, 4).map(x => x[0] + ' ' + fmtSAR(x[1].sum)).join('; ') + '.');
+  if (D.uncat > 0.1) add('soft', 'CAT', 'n_cat', pct(D.uncat) + ' of the statement’s value is uncategorised', 'Over 10% costs data confidence. Add owner, account or company names, or review the lines.');
+  if (D.mix.cash > 0.3) add('info', 'R6', 'n_act', 'Cash is ' + pct(D.mix.cash) + ' of sales', 'Cash is the hardest channel to verify.');
+  if (D.margin < 0) add('soft', 'C3', 'n_dscr', 'Operating cash flow is negative on the statement (' + pct(D.margin, 1) + ' of turnover)', 'Operating costs take all of real sales. With a short history the engine blends this margin with the sector’s (Z1), which lifts it; on the statement alone there is no room for an instalment.');
+  return res;
+}
+
+/* ---- from the analysis to the decision engine ---- */
+function statementInputs(res, form){
+  const D = res.D, cl = (x, a, b) => Math.max(a, Math.min(b, x)), r5 = x => Math.round(x / 5) * 5;
+  const extra = [];
+  res.flags.filter(f => f.sev === 'soft' && ['F4','F5','F10','F12','R8','R7'].includes(f.code)).forEach(f => { if (!extra.some(e => e.code === f.code)) extra.push({code:f.code, name:f.title.length > 40 ? f.title.slice(0, 38) + '…' : f.title, node:f.node, note:'From the uploaded statement'}); });
+  return {
+    sector:form.sector, months:cl(D.months, 3, 12), vatStatus:form.vatStatus, cfs:false, source:'pdf',
+    turnover:cl(Math.round(D.T0 / 1000) * 1000, 10000, 3000000), growth:cl(Math.round(D.growth * 100), -40, 60), season:cl(Math.round(D.swing * 100), 0, 60),
+    cv:cl(Math.round(D.cv * 100), 5, 60), peak:D.peak == null ? 0 : D.peak, hijri:false, margin:cl(Math.round(D.margin * 100), -20, 40),
+    age:form.age, top:cl(Math.round(D.top * 100), 2, 100), payer:D.payer, pos:r5(cl(D.mix.card * 100, 0, 100)), inflowDay:cl(D.inflowDay, 1, 28),
+    largest:cl(Math.round(D.largest * 100), 5, 90), related:cl(Math.round(D.rel * 100), 0, 40), emi:cl(Math.round(D.emi / 1000) * 1000, 0, 200000),
+    drawings:r5(cl(D.draws * 100, 0, 100)), bounces:cl(D.bounces, 0, 8), missed:cl(D.missed, 0, 6), negDays:cl(D.negDays, 0, 60),
+    cov:1, lag:0, onTime:100, vatYears:form.vatStatus === 'returns' ? 2 : 1, vatGrowth:form.vatStatus === 'returns' ? cl(Math.round(D.growth * 100), -40, 60) : 0, match:form.vatStatus === 'returns' ? 100 : 0,
+    edited:res.breaks.length > 0 && res.breaks.length <= res.lines.length * 0.5, mismatch:false, circular:cl(Math.round(D.circ * 100), 0, 40),
+    spikes:D.spikeMonths.length >= 3 || D.quick.length > 0, pass:r5(cl(D.pass * 100, 0, 100)), linked:false, security:form.security, requested:form.requested,
+    uncat:cl(Math.round(D.uncat * 100), 0, 60), extraFlagCodes:extra
+  };
+}
+
+/* ---- sample statement (synthetic, for trying the tab without real data) ---- */
+function sampleStatement(){
+  const rnd = mulberry32(7), u = (a, b) => a + (b - a) * rnd(), now = new Date();
+  const start = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 12, 1), end = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0);
+  const ev = [], add = (t, desc, dr, cr) => ev.push({t, desc, dr:Math.round(dr * 100) / 100, cr:Math.round(cr * 100) / 100});
+  const payers = ['SARIE FROM AL WAFA CATERING', 'IPS FROM RIYADH HOTELS CO', 'SARIE FROM SAHARA EVENTS'];
+  let wk = 0;
+  for (let t = start; t <= end; t += DAY) {
+    const d = new Date(t), dow = d.getUTCDay(), date = d.getUTCDate(), mi = (d.getUTCFullYear() - new Date(start).getUTCFullYear()) * 12 + d.getUTCMonth() - new Date(start).getUTCMonth();
+    const f = 1 + 0.25 * Math.cos(2 * Math.PI * (d.getUTCMonth() - 2) / 12);
+    if (dow !== 5) add(t, 'POS SETTLEMENT MADA ' + (100000 + Math.floor(rnd() * 900000)), 0, u(6500, 12500) * f);
+    if (dow === 0) { wk++; add(t, payers[wk % 3] + ' REF ' + (20000 + wk), 0, u(18000, 42000) * f); }
+    if (dow === 2) add(t, 'CASH DEPOSIT CDM', 0, u(3000, 7000));
+    if (dow === 1 || dow === 3) add(t, 'TRANSFER TO GULF FOOD SUPPLY', u(22000, 38000) * f, 0);
+    if (dow === 4 && wk % 2 === 0) add(t, 'TRANSFER TO DELTA PACKAGING', u(6000, 11000), 0);
+    if (date === 1) add(t, 'TRANSFER TO AHMED AL HARBI', 12000, 0);
+    if (date === 5) add(t, 'INSTALLMENT ABC FINANCE', 15000, 0);
+    if (date === 15) add(t, 'SADAD GOSI CONTRIBUTION', 7800, 0);
+    if (date === 20) add(t, 'SADAD SAUDI ELECTRICITY', u(2800, 3600), 0);
+    if (date === 21) add(t, 'SADAD STC', u(850, 950), 0);
+    if (date === 25) { add(t, 'ACCOUNT MAINTENANCE FEE', 30, 0); add(t, 'VAT ON FEE', 4.5, 0); }
+    if (date === 27) add(t, 'MUDAD PAYROLL', mi >= 8 ? 66000 : 62000, 0);
+    if (date === 3 && mi % 3 === 0) add(t, 'EJAR RENT PAYMENT', 45000, 0);
+    if (date === 28 && mi % 3 === 1) add(t, 'SADAD ZATCA VAT RETURN', u(26000, 32000), 0);
+    if (mi === 4 && date === 12) { add(t, 'RETURNED CHEQUE 104523', 18000, 0); add(t, 'RETURNED CHEQUE FEE', 50, 0); }
+    if (mi === 5 && date === 8) add(t, 'TRANSFER FROM AL NOOR TRADING ACC 2', 0, 50000);
+    if (mi === 5 && date === 22) add(t, 'TRANSFER TO AL NOOR TRADING ACC 2', 50000, 0);
+    if (mi === 6 && date === 10) add(t, 'TRANSFER TO SAHARA EVENTS', 40000, 0);
+    if (mi === 6 && date === 14) add(t, 'SARIE FROM SAHARA EVENTS', 0, 40000);
+    if (mi === 7 && (date === 16 || date === 17)) add(t, 'TRANSFER TO DELTA PACKAGING', 8450, 0);
+    if (mi === 8 && date === 9) add(t, 'SARIE FROM RIYADH HOTELS CO', 0, 260000);
+    if ((mi === 2 || mi === 9) && date === 18) add(t, 'MISC CREDIT ADJ', 0, 1200);
+    if (mi === 10 && date === 28) add(t, 'CASH DEPOSIT CDM', 0, 150000);
+    if (mi === 11 && date === 2) add(t, 'TRANSFER TO AHMED AL HARBI', 145000, 0);
+  }
+  let bal = 220000;
+  const rows = [['Date', 'Description', 'Debit', 'Credit', 'Balance']];
+  const out = ev.map(e => { bal += e.cr - e.dr; return [fmtDMY(e.t), e.desc, e.dr ? e.dr.toFixed(2) : '', e.cr ? e.cr.toFixed(2) : '', bal.toFixed(2)]; });
+  out.reverse().forEach(r => rows.push(r));
+  rows.push([fmtDMY(start), 'OPENING BALANCE', '', '', '220000.00']);
+  return rows;
+}
+function fmtDMY(t){ const d = new Date(t); return String(d.getUTCDate()).padStart(2, '0') + '/' + String(d.getUTCMonth() + 1).padStart(2, '0') + '/' + d.getUTCFullYear(); }
+
+/* ---- tab wiring ---- */
+function stmForm(){
+  return {business:$('#stm-biz').value.trim(), owners:splitList($('#stm-owners').value), accounts:splitList($('#stm-acc').value), related:splitList($('#stm-rel').value), lenders:splitList($('#stm-lend').value),
+    sector:$('#stm-sector').value, age:Math.max(0.5, Math.min(15, Number($('#stm-age').value) || 3)), vatStatus:$('#stm-vat').value, security:$('#stm-sec').value,
+    requested:Math.max(20000, Math.min(5000000, Number($('#stm-req').value) || 500000))};
+}
+function stmInit(){
+  $('#stm-sector').innerHTML = Object.keys(SECTORS).map(k => '<option value="' + k + '">' + SECTORS[k].name + '</option>').join('');
+  $('#stm-sec').innerHTML = Object.keys(SECURITY).map(k => '<option value="' + k + '">' + SECURITY[k][0] + '</option>').join('');
+  $('#stm-vat').innerHTML = [['noreturns','Registered, returns not yet provided'],['returns','Registered, returns provided'],['none','Not registered']].map(o => '<option value="' + o[0] + '">' + o[1] + '</option>').join('');
+  $('#stm-file').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) stmRead(f); });
+  $('#stm-sample').addEventListener('click', () => {
+    $('#stm-biz').value = 'Al Noor Trading'; $('#stm-owners').value = 'Ahmed Al Harbi'; $('#stm-lend').value = 'ABC Finance'; $('#stm-acc').value = ''; $('#stm-rel').value = '';
+    $('#stm-sector').value = 'food'; $('#stm-age').value = 5; $('#stm-req').value = 500000;
+    STM.sheets = null; STM.extras = {vendor:null, triggers:null}; STM.filled = [];
+    stmLoad(sampleStatement(), 'Sample statement (synthetic)');
+  });
+  $('#stm-run').addEventListener('click', stmRun);
+  let tmr = 0;
+  ['#stm-biz','#stm-owners','#stm-acc','#stm-rel','#stm-lend','#stm-sector','#stm-age','#stm-vat','#stm-sec','#stm-req'].forEach(id => $(id).addEventListener('change', () => { clearTimeout(tmr); tmr = setTimeout(() => { if (STM.rows) stmRun(); }, 150); }));
+  $('#stm-out').addEventListener('click', e => {
+    const b = e.target.closest('[data-node]');
+    if (b) { const id = b.dataset.node; if (location.hash !== '#map') location.hash = 'map'; show('map'); select(id); requestAnimationFrame(() => requestAnimationFrame(() => { if (nodeEl[id]) nodeEl[id].scrollIntoView({block:'center', behavior: reduceMotion ? 'auto' : 'smooth'}); })); return; }
+    if (e.target.closest('#stm-open')) { Object.assign(S, STM.inputs); activePreset = -1; syncControls(); renderPresets(); render(); location.hash = 'applicant'; }
+  });
+  $('#stm-out').addEventListener('change', e => { if (e.target.id === 'stm-filter') stmTable(); });
+}
+function stmRead(file){
+  const status = $('#stm-status'); status.textContent = 'Reading ' + file.name + '…';
+  const reader = new FileReader();
+  const isText = /\.(csv|txt)$/i.test(file.name);
+  reader.onerror = () => { status.textContent = 'Could not read the file.'; };
+  reader.onload = () => {
+    try {
+      let rows;
+      if (isText) rows = parseCSV(String(reader.result));
+      else {
+        if (!window.XLSX) { status.textContent = 'The Excel reader did not load. Export the statement as CSV and try again.'; return; }
+        const wb = window.XLSX.read(new Uint8Array(reader.result), {type:'array', cellDates:true});
+        stmLoadBook(wb.SheetNames.map(n => ({name:n, rows:window.XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, raw:true, defval:''})})), file.name);
+        return;
+      }
+      stmLoadBook([{name:'CSV', rows}], file.name);
+    } catch (err) { status.textContent = 'Could not read this file: ' + err.message; }
+  };
+  if (isText) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+}
+function stmPickSheet(sheets){
+  let best = 0, bestSc = -1;
+  sheets.forEach((sh, i) => {
+    const h = findHeader(sh.rows); if (h.hdr < 0) return;
+    const sc = sh.rows.length - h.hdr - 1 + (h.map.balance != null ? 5 : 0) + (/^transactions?$/i.test(sh.name.trim()) ? 1 : 0);
+    if (sc > bestSc) { bestSc = sc; best = i; }
+  });
+  return best;
+}
+function stmExtras(sheets){
+  const ex = {vendor:null, triggers:null};
+  const V = [['total no. of credit transactions','nCr'],['total of credit transactions amount','sCr'],['total no. of debit transactions','nDr'],['total of debit transactions amount','sDr'],
+    ['total no. of cash deposits','nCash'],['total of cash deposits amount','sCash'],['total no. of emi','nEmi'],['minimum of eod balance','minBal']];
+  sheets.forEach(sh => {
+    const rows = sh.rows;
+    for (let i = 0; i < Math.min(rows.length - 1, 30); i++) {
+      const low = (rows[i] || []).map(c => String(c).toLowerCase().trim()), hi = low.indexOf('account holder name');
+      if (hi >= 0 && ex.holder == null) { const nx = rows[i + 1] || [], ai = low.indexOf('account number'), bi = low.indexOf('bank name'); ex.holder = String(nx[hi] || '').trim(); if (ai >= 0) ex.account = String(nx[ai] || '').trim(); if (bi >= 0) ex.bank = String(nx[bi] || '').trim(); }
+      const fi = low.indexOf('fraud indicator'), ii = low.indexOf('identified?');
+      if (fi >= 0 && ii >= 0 && ex.triggers == null) {
+        ex.triggers = []; ex.triggerCount = 0;
+        rows.slice(i + 1).forEach(r => { const name = String(r[fi] || '').trim(), id = String(r[ii] || '').trim().toUpperCase(); if (!name || name === 'None') return; ex.triggerCount++; if (id === 'Y') ex.triggers.push(name); });
+      }
+    }
+    rows.forEach(r => {
+      const lab = String((r || [])[0] || '').toLowerCase().replace(/\s+/g, ' ').trim(), hit = V.find(v => v[0] === lab); if (!hit) return;
+      const rest = r.slice(1).filter(x => x !== '' && x != null); if (!rest.length || rest.some(x => parseNum(x) == null)) return;
+      const nums = rest.map(parseNum);
+      ex.vendor = ex.vendor || {}; if (ex.vendor[hit[1]] == null) ex.vendor[hit[1]] = nums[nums.length - 1];
+    });
+    rows.forEach(r => { const lab = String((r || [])[0] || '').toLowerCase(); if (/^total no\. of .*bounce/.test(lab)) { const rest = r.slice(1).filter(x => x !== '' && x != null); const nums = rest.some(x => parseNum(x) == null) ? [] : rest.map(parseNum); if (nums.length) { ex.vendor = ex.vendor || {}; ex.bounceSeen = ex.bounceSeen || new Set(); if (!ex.bounceSeen.has(lab)) { ex.bounceSeen.add(lab); ex.vendor.nBounce = Math.max(ex.vendor.nBounce || 0, nums[nums.length - 1]); } } } });
+  });
+  return ex;
+}
+function stmLoadBook(sheets, fileName){
+  STM.sheets = sheets; STM.file = fileName; STM.sheetIdx = stmPickSheet(sheets);
+  STM.extras = sheets.length > 1 ? stmExtras(sheets) : {vendor:null, triggers:null};
+  const ex = STM.extras, filled = [];
+  if (ex.holder && !$('#stm-biz').value.trim()) { $('#stm-biz').value = ex.holder; filled.push('business name'); }
+  if (ex.account && !$('#stm-acc').value.trim()) { $('#stm-acc').value = ex.account; filled.push('account number'); }
+  STM.filled = filled;
+  const sh = sheets[STM.sheetIdx];
+  stmLoad(sh.rows, fileName + (sheets.length > 1 ? ' · sheet “' + sh.name + '”' : ''));
+}
+function stmLoad(rows, name){
+  STM.rows = rows; STM.name = name;
+  const h = findHeader(rows); STM.hdr = h.hdr; STM.map = h.map;
+  stmMapUI();
+  $('#stm-run').disabled = false;
+  $('#stm-status').textContent = name + ': ' + rows.length + ' rows' + (h.hdr < 0 ? '. Header row not recognised; set the columns below.' : '.') + (STM.sheets && STM.sheets.length > 1 ? ' Read ' + STM.sheets.length + ' sheets and picked the one with the transactions.' : '') + (STM.filled && STM.filled.length ? ' Filled the ' + STM.filled.join(' and ') + ' from the file.' : '');
+  if (h.hdr < 0) $('#stm-mapbox').open = true; else stmRun();
+}
+function stmMapUI(){
+  const rows = STM.rows, hdr = STM.hdr, head = hdr >= 0 ? rows[hdr] : rows[0].map((_, i) => 'Column ' + (i + 1));
+  const sample = rows[hdr + 1] || [];
+  const opts = '<option value="">(none)</option>' + head.map((c, i) => '<option value="' + i + '">' + esc(String(c || 'Column ' + (i + 1)).slice(0, 30)) + (sample[i] !== undefined && sample[i] !== '' ? ' (e.g. ' + esc(String(sample[i] instanceof Date ? fmtDMY(Date.UTC(sample[i].getFullYear(), sample[i].getMonth(), sample[i].getDate())) : sample[i]).slice(0, 18)) + ')' : '') + '</option>').join('');
+  const sheetPick = STM.sheets && STM.sheets.length > 1 ? '<label class="stm-maprow">Sheet<select id="stm-sheet">' + STM.sheets.map((sh, i) => '<option value="' + i + '"' + (i === STM.sheetIdx ? ' selected' : '') + '>' + esc(sh.name) + ' (' + sh.rows.length + ' rows)</option>').join('') + '</select></label>' : '';
+  $('#stm-map').innerHTML = sheetPick + '<p class="help">Header row: ' + (hdr >= 0 ? 'row ' + (hdr + 1) : 'not found, data assumed to start at row 1') + '. Use either Debit and Credit, or Amount (negative = money out) with an optional marker.</p>' +
+    MAP_KEYS.map(([k, label]) => '<label class="stm-maprow">' + label + '<select data-k="' + k + '">' + opts + '</select></label>').join('');
+  if ($('#stm-sheet')) $('#stm-sheet').addEventListener('change', e => { STM.sheetIdx = +e.target.value; const sh = STM.sheets[STM.sheetIdx]; stmLoad(sh.rows, STM.file + ' · sheet “' + sh.name + '”'); });
+  MAP_KEYS.forEach(([k]) => { const sel = $('#stm-map select[data-k="' + k + '"]'); sel.value = STM.map[k] != null ? String(STM.map[k]) : ''; sel.addEventListener('change', () => { if (sel.value === '') delete STM.map[k]; else STM.map[k] = +sel.value; stmRun(); }); });
+}
+function stmRun(){
+  if (!STM.rows) return;
+  const form = stmForm();
+  const res = analyseStatement(STM.rows, STM.hdr, STM.map, form);
+  STM.result = res;
+  if (res.error) { $('#stm-out').innerHTML = '<section class="panel"><h3>Could not analyse this file</h3><p>' + esc(res.error) + '</p></section>'; return; }
+  STM.inputs = statementInputs(res, form);
+  stmRender(res, form);
+}
+const sevName = {hard:['fail','Hard'], soft:['flag','Soft'], info:['skip','Note'], pass:['pass','Pass']};
+function lineMini(l){ return fmtDate(l.t) + ' · ' + esc(l.desc.slice(0, 48)) + ' · ' + (l.cr ? '+' + fmtSAR(l.cr) : '−' + fmtSAR(l.dr)); }
+function stmRender(res, form){
+  const D = res.D, inp = STM.inputs, R = compute(Object.assign({}, S, inp));
+  const o = R.offer;
+  let h = '<div class="verdict ' + R.tone + '"><p class="v-state">' + R.decision + '</p>';
+  h += o && R.decision !== 'Decline' ? '<p class="v-sum">' + fmtSAR(o.amount) + ' over ' + o.n + ' months at ' + pctR(o.rate) + ' a year, about ' + fmtSAR(o.P) + ' a month</p>' : '<p class="v-sum">No offer</p>';
+  h += '<p class="v-note">From this statement plus the details on the left. Security, years trading and the amount requested come from the form; everything else from the statement.' + (form.vatStatus === 'returns' ? ' VAT returns are assumed to agree with the statement until you enter their figures in Try an applicant.' : '') + '</p>';
+  h += '<ul class="reasons">' + R.reasons.slice(0, 8).map(x => '<li><button type="button" class="code ' + (x.tone === 'bad' ? 'bad' : x.tone === 'warn' ? 'warn' : '') + '" data-node="' + x.node + '">' + x.code + '</button><span>' + x.text + '</span></li>').join('') + '</ul>';
+  if (R.decision === 'Decline' && R.knock.length === 1 && R.knock[0][0] === 'Data' && !R.hard.length && R.grade !== 'E') {
+    const R6 = compute(Object.assign({}, S, inp, {months:6})), o6 = R6.offer;
+    h += '<p class="v-note"><b>Indicative only, if six months looked like these ' + D.months + ':</b> ' + R6.decision + (o6 && R6.decision !== 'Decline' ? ', ' + fmtSAR(o6.amount) + ' over ' + o6.n + ' months at ' + pctR(o6.rate) : R6.reasons.filter(x => x.tone === 'bad').slice(0, 1).map(x => ' (' + x.text.charAt(0).toLowerCase() + x.text.slice(1) + ')').join('')) + '. The framework needs at least six months of statements before it will decide.</p>';
+  }
+  h += '<p style="margin:12px 0 0"><button type="button" class="stm-btn" id="stm-open">Open in Try an applicant</button></p></div>';
+  const order = {hard:0, soft:1, info:2, pass:3};
+  const flags = res.flags.slice().sort((a, c) => order[a.sev] - order[c.sev]);
+  const nh = flags.filter(f => f.sev === 'hard').length, ns = flags.filter(f => f.sev === 'soft').length;
+  h += '<div class="panels">';
+  h += '<section class="panel"><h3>The statement</h3><dl class="kv">' +
+    '<dt>File</dt><dd>' + esc(STM.name) + '</dd><dt>Period</dt><dd>' + fmtDate(res.first) + ' to ' + fmtDate(res.last) + '</dd>' +
+    '<dt>Transactions read</dt><dd>' + res.lines.length.toLocaleString('en-US') + (res.skipped ? ' (' + res.skipped + ' rows skipped)' : '') + '</dd>' +
+    '<dt>Full months used for averages</dt><dd>' + D.months + '</dd><dt>Money in</dt><dd>' + fmtSAR(res.totalIn) + '</dd><dt>Money out</dt><dd>' + fmtSAR(res.totalOut) + '</dd>' +
+    (res.daily.length ? '<dt>First and last balance</dt><dd>' + fmtSAR(res.daily[0].bal) + ' → ' + fmtSAR(res.daily[res.daily.length - 1].bal) + '</dd>' : '') +
+    '<dt>Categorised by value</dt><dd>' + pct(1 - D.uncat) + '</dd></dl></section>';
+  h += '<section class="panel"><h3>Flags: ' + nh + ' hard, ' + ns + ' soft</h3><ul class="checks">' + flags.map(f => '<li><button type="button" class="code" data-node="' + f.node + '">' + f.code + '</button><span>' + esc(f.title) + '<small>' + esc(f.detail) + '</small>' + (f.examples.length ? f.examples.map(l => '<small class="ex">' + lineMini(l) + '</small>').join('') : '') + '</span><span class="st ' + sevName[f.sev][0] + '">' + sevName[f.sev][1] + '</span></li>').join('') + '</ul></section>';
+  const row = (a, b, c) => '<tr><td>' + a + '</td><td>' + b + '</td><td>' + c + '</td></tr>';
+  const ex = STM.extras || {};
+  if (ex.vendor) {
+    const v = ex.vendor, nIn = res.lines.filter(l => l.cr > 0).length, nOut = res.lines.filter(l => l.dr > 0).length, cash = res.byCat['CR-CASH'] || {n:0, in:0};
+    const minBal = res.daily.length ? Math.min(...res.daily.map(x => x.bal)) : null;
+    const cmp = (label, theirs, ours, money) => theirs == null ? '' : '<tr><td>' + label + '</td><td>' + (money ? fmtSAR(theirs) : Math.round(theirs).toLocaleString('en-US')) + '</td><td>' + (ours == null ? '–' : money ? fmtSAR(ours) : Math.round(ours).toLocaleString('en-US')) + '</td><td>' + (ours == null ? '–' : Math.abs(ours - theirs) <= Math.max(money ? 1 : 0, Math.abs(theirs) * 0.005) ? 'Matches' : 'Differs') + '</td></tr>';
+    h += '<section class="panel span2"><h3>Cross-check with the file’s own analysis</h3><p class="sub">This file already carries a summary from the tool that produced it. Matching totals show every line was read.</p><div class="tbl-wrap"><table class="ctab ltab"><thead><tr><th>Measure</th><th>The file says</th><th>We read</th><th></th></tr></thead><tbody>' +
+      cmp('Credit lines', v.nCr, nIn) + cmp('Money in', v.sCr, res.totalIn, true) + cmp('Debit lines', v.nDr, nOut) + cmp('Money out', v.sDr, res.totalOut, true) +
+      cmp('Cash deposits', v.nCash, cash.n) + cmp('Cash deposited', v.sCash, cash.in, true) + cmp('Loan instalments (EMI) found', v.nEmi, (res.byCat['DR-EMI'] || {n:0}).n) + cmp('Bounced or returned items', v.nBounce, D.bounces) + cmp('Lowest end-of-day balance', v.minBal, minBal, true) +
+      '</tbody></table></div>' + (ex.triggers ? '<p class="sub" style="margin-top:8px">The file’s own fraud indicators: ' + ex.triggers.length + ' of ' + ex.triggerCount + ' triggered' + (ex.triggers.length ? ' (' + ex.triggers.map(esc).join(', ') + ')' : '') + '.</p>' : '') + '</section>';
+  }
+  h += '<section class="panel span2"><h3>What the statement says, and what it feeds</h3><p class="sub">Each figure is worked out from the categorised lines and passed to the decision engine as the matching simulator input.</p><div class="tbl-wrap"><table class="ctab ltab"><thead><tr><th>Figure</th><th>From the statement</th><th>Decision input</th></tr></thead><tbody>' +
+    row('True turnover, monthly average (R1)', fmtSAR(D.avgT), 'Monthly credits ' + fmtSAR(inp.turnover) + ', with circular ' + inp.circular + '% and related ' + inp.related + '% removed by the engine') +
+    row('Operating outflows, monthly average', fmtSAR(D.avgO), 'Part of the cash margin') +
+    row('Cash operating margin (M2)', pct(D.margin, 1), 'Cash margin ' + inp.margin + '%') +
+    row('Owner drawings, share of cash profit (B5)', pct(D.draws), 'Owner drawings ' + inp.drawings + '%') +
+    row('Existing instalments, monthly (d, C4)', fmtSAR(D.emi) + (D.patternEMI ? ' (includes possible instalments)' : ''), 'Existing instalments ' + fmtSAR(inp.emi)) +
+    row('Growth over the year (R3)', (D.months < 6 ? 'Annualised from ' + D.months + ' months, so unreliable: ' : '') + (D.growth >= 0 ? '+' : '−') + pct(Math.abs(D.growth)) + (D.delta3 != null ? '; last 3 months vs the 3 before ' + (D.delta3 >= 0 ? '+' : '−') + pct(Math.abs(D.delta3)) : ''), 'Growth ' + inp.growth + '%') +
+    row('Month-to-month variability (h)', pct(D.cv), 'Variability ' + inp.cv + '%') +
+    row('Seasonal swing and peak (R4)', D.peak == null ? 'Needs 12 months' : '±' + pct(D.swing) + ', peak ' + MONTHS[D.peak], D.peak == null ? 'Sector figure used (Z1)' : 'Swing ' + inp.season + '%, peak ' + MONTHS[inp.peak]) +
+    row('Largest payer’s share (R5)', pct(D.top) + (D.topName ? ' (' + esc(D.topName) + ')' : '') + '; HHI ' + D.hhi.toFixed(2) + '; churn ' + pct(D.churn), 'Largest payer ' + inp.top + '%, payer type ' + PAYERS[inp.payer].name) +
+    row('Sales channels (R6)', 'Card ' + pct(D.mix.card) + ', transfers ' + pct(D.mix.cust) + ', cash ' + pct(D.mix.cash) + ', online ' + pct(D.mix.online + D.mix.bnpl) + ', government ' + pct(D.mix.gov), 'Card share ' + inp.pos + '%') +
+    row('Main inflow day (S1)', 'Day ' + D.inflowDay, 'Instalment day ' + Math.min(28, D.inflowDay + 3)) +
+    row('Largest receipt, share of its month (C8)', pct(D.largest), 'Largest single credit ' + inp.largest + '%') +
+    row('Returned or bounced payments (B1)', String(D.bounces), 'Bounced ' + inp.bounces) +
+    row('Late or missing instalments (B2)', String(D.missed), 'Late or missed ' + inp.missed) +
+    row('Days below zero (C6)', res.hasBal ? String(D.negDays) : 'No balance column', 'Days below zero ' + inp.negDays) +
+    row('Circular flows (F6)', pct(D.circ, 1), 'Circular ' + inp.circular + '%') +
+    row('Money passing through a near-empty account within 48 hours (F8)', pct(D.pass), 'Pass-through ' + inp.pass + '%') +
+    row('Days cash on hand (C5) and worst drawdown (C7)', D.dcoh != null ? Math.round(D.dcoh) + ' days; ' + pct(D.drawdown) : 'No balance column', 'Reported only') +
+    row('Uncategorised share of value', pct(D.uncat), 'Uncategorised ' + inp.uncat + '%') +
+    '</tbody></table></div></section>';
+  h += '<section class="panel span2"><h3>Month by month</h3><div class="tbl-wrap"><table class="ctab"><thead><tr><th>Month</th><th>Money in</th><th>Sales</th><th>True turnover</th><th>Operating out</th><th>Drawings</th><th>Instalments</th><th>CFADS</th><th>End balance</th></tr></thead><tbody>' +
+    res.months.map(m => '<tr' + (res.useMonths.includes(m) ? '' : ' class="partial"') + '><td>' + res.periodLabel[m.k] + (res.useMonths.includes(m) ? '' : ' (part)') + '</td><td>' + k0(m.G) + '</td><td>' + k0(m.salesGross - m.circ - m.dup - m.ret) + '</td><td>' + k0(m.T) + '</td><td>' + k0(m.O) + '</td><td>' + k0(m.draw) + '</td><td>' + k0(m.emi) + '</td><td>' + k0(m.cfads) + '</td><td>' + (m.endBal == null ? '–' : k0(m.endBal)) + '</td></tr>').join('') +
+    '</tbody></table></div><p class="sub" style="margin-top:8px">Amounts in SAR thousands. CFADS = true turnover − operating out − 60% of drawings − tax.</p></section>';
+  const cats = Object.keys(CATS).filter(c => res.byCat[c]);
+  h += '<section class="panel span2"><h3>Categories</h3><div class="tbl-wrap"><table class="ctab"><thead><tr><th>Category</th><th>Code</th><th>Treated as</th><th>Lines</th><th>Money in</th><th>Money out</th></tr></thead><tbody>' +
+    cats.map(c => '<tr><td>' + CATS[c][0] + '</td><td>' + c + '</td><td>' + CATS[c][2] + '</td><td>' + res.byCat[c].n + '</td><td>' + (res.byCat[c].in ? k0(res.byCat[c].in) : '') + '</td><td>' + (res.byCat[c].out ? k0(res.byCat[c].out) : '') + '</td></tr>').join('') +
+    '</tbody></table></div></section>';
+  if (D.outliers.length) h += '<section class="panel span2"><h3>Transactions far out of line</h3><p class="sub">Compared with the median for their category; a robust z-score above 3.5 is listed.</p><div class="tbl-wrap"><table class="ctab ltab"><thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Category</th><th>Typical</th><th>z</th></tr></thead><tbody>' +
+    D.outliers.map(x => '<tr><td>' + fmtDate(x.l.t) + '</td><td>' + esc(x.l.desc.slice(0, 50)) + '</td><td>' + k0(x.l.cr || x.l.dr) + '</td><td>' + CATS[x.l.cat][0] + '</td><td>' + k0(x.med) + '</td><td>' + x.z.toFixed(1) + '</td></tr>').join('') + '</tbody></table></div></section>';
+  h += '<section class="panel span2"><h3>Every line, categorised</h3><p class="sub"><label>Show <select id="stm-filter"><option value="all">all lines</option><option value="flag">flagged lines only</option>' + cats.map(c => '<option value="' + c + '">' + CATS[c][0] + '</option>').join('') + '</select></label></p><div class="tbl-wrap" id="stm-tx"></div></section>';
+  h += '</div>';
+  $('#stm-out').innerHTML = h;
+  stmTable();
+  catAmounts();
+}
+function k0(x){ return (x < 0 ? '−' : '') + (Math.abs(x) / 1000).toFixed(1); }
+function stmTable(){
+  const res = STM.result; if (!res || !res.lines) return;
+  const f = ($('#stm-filter') || {}).value || 'all';
+  const fl = l => Object.keys(l.flags).filter(k => l.flags[k]);
+  const ls = res.lines.filter(l => f === 'all' || (f === 'flag' ? fl(l).length : l.cat === f));
+  const shown = ls.slice(-400).reverse();
+  $('#stm-tx').innerHTML = '<table class="ctab ltab"><thead><tr><th>Date</th><th>Description</th><th>In</th><th>Out</th><th>Balance</th><th>Category</th><th>Why</th></tr></thead><tbody>' +
+    shown.map(l => '<tr><td>' + fmtDate(l.t) + '</td><td>' + esc(l.desc.slice(0, 60)) + '</td><td>' + (l.cr ? k0(l.cr) : '') + '</td><td>' + (l.dr ? k0(l.dr) : '') + '</td><td>' + (l.bal == null ? '' : k0(l.bal)) + '</td><td>' + l.cat + '</td><td>' + esc(l.why) + (fl(l).length ? ' <b>(' + fl(l).join(', ') + ')</b>' : '') + '</td></tr>').join('') +
+    '</tbody></table>' + (ls.length > 400 ? '<p class="sub">Showing the latest 400 of ' + ls.length + ' lines.</p>' : '');
+}
+
+/* ---------------- map: categorisation layer ---------------- */
+const CAT_GROUPS = [
+  ['Sales: counts as turnover', ['CR-CARD','CR-ONLINE','CR-BNPL','CR-CUST','CR-GOV','CR-CASH']],
+  ['Other money in: never turnover', ['CR-INT','CR-OWNER','CR-REL','CR-FIN','CR-REF','CR-OTHER']],
+  ['Operating costs', ['DR-SUP','DR-PAY','DR-GOSI','DR-RENT','DR-UTIL','DR-VAT','DR-GOVFEE','DR-FEE','DR-CARD','DR-CASH','DR-OTHER']],
+  ['Tax and financing', ['DR-TAX','DR-EMI','DR-BNPL','DR-OWNER','DR-REL']],
+  ['Excluded, investing, reversals', ['DR-INT','DR-CAPEX','DR-RET']]
+];
+const SECT_TEXT = {
+  'Sales':'Treated as sales: it counts towards true turnover (T).',
+  'Operating':'Treated as an operating cost: it counts in operating outflows (O).',
+  'Tax':'Treated as tax: it comes off cash flow available for debt service (CFADS).',
+  'Financing':'Treated as financing: never turnover and never an operating cost. It enters the financing totals listed below.',
+  'Investing':'Treated as investing: kept out of operating costs, so it does not lower CFADS.',
+  'Excluded':'Excluded: kept out of turnover and operating costs.',
+  'Reduces sales':'Taken off sales, because the receipt was returned or refunded.'
+};
+const RULES_IN = [
+  ['Returned item, reversal or refund wording', 'CR-REF'],
+  ['The business’s own account number or name', 'CR-INT'],
+  ['An owner’s name', 'CR-OWNER'],
+  ['A related company’s name', 'CR-REL'],
+  ['A lender’s name, or financing wording such as loan, finance, disbursement, tawarruq, murabaha, تمويل, قرض', 'CR-FIN'],
+  ['A BNPL provider: Tabby, Tamara', 'CR-BNPL'],
+  ['A payment gateway such as HyperPay, Moyasar, PayTabs, Checkout, Tap, Amazon Pay, PayFort, STC Pay, Apple Pay', 'CR-ONLINE'],
+  ['Card settlement wording such as POS, mada, PAYMADA, PAYVISA, PAYMCCR, PAYGN, merchant, settlement, Geidea, نقاط البيع', 'CR-CARD'],
+  ['Cash deposit wording such as cash deposit, CDM, deposit machine, إيداع نقدي', 'CR-CASH'],
+  ['Government payer wording such as Etimad, ministry, وزارة, government, Amana', 'CR-GOV'],
+  ['Transfer wording (transfer, SARIE, IPS, instant, SWIFT, حوالة, تحويل), or a counterparty column', 'CR-CUST'],
+  ['Anything else: never counted as a sale', 'CR-OTHER']
+];
+const RULES_OUT = [
+  ['Returned item (not a fee), reversal, or refund paid', 'DR-RET'],
+  ['The business’s own account number or name', 'DR-INT'],
+  ['An owner’s name', 'DR-OWNER'],
+  ['A related company’s name', 'DR-REL'],
+  ['A BNPL provider: Tabby, Tamara', 'DR-BNPL'],
+  ['A lender’s name, or instalment wording such as instalment, EMI, loan repayment, قسط', 'DR-EMI'],
+  ['VAT charged on a bank or card-processing fee (VAT on, ضريبة القيمة المضافة على, من اصل)', 'DR-FEE'],
+  ['Customs wording: customs, جمارك', 'DR-GOVFEE'],
+  ['Zakat or income tax wording such as zakat payment, زكوي, income tax', 'DR-TAX'],
+  ['ZATCA or VAT wording', 'DR-VAT'],
+  ['GOSI wording', 'DR-GOSI'],
+  ['Payroll wording such as Mudad, WPS, payroll, salary, رواتب', 'DR-PAY'],
+  ['Rent wording such as Ejar, rent, lease, إيجار', 'DR-RENT'],
+  ['Utility and telecom billers such as electricity, SEC, NWC, STC, Mobily, Zain', 'DR-UTIL'],
+  ['Government fee wording such as Qiwa, Muqeem, Absher, Balady, iqama, passports, مدفوعات الخدمات الحكومية', 'DR-GOVFEE'],
+  ['Penalty or fine wording', 'DR-FEE'],
+  ['Fee or charge wording such as fee, charge, commission, MDR, رسوم, عمولة, or a card-processing (merchant) fee; on a transfer, only when the fee is the line itself, not a fee field inside the transfer', 'DR-FEE'],
+  ['Cash withdrawal wording such as ATM, cash withdrawal, سحب نقدي', 'DR-CASH'],
+  ['Vehicle or equipment sellers such as motors, auto, vehicle, equipment, machinery, معدات, سيارات', 'DR-CAPEX'],
+  ['Card purchase wording such as POS, purchase, card, شراء, when the line is not a transfer', 'DR-CARD'],
+  ['Supplier or invoice wording such as supplier, vendor, invoice, buying goods, مورد, فاتورة, شراء بضاعة', 'DR-SUP'],
+  ['Transfer wording, or a counterparty column', 'DR-SUP'],
+  ['Anything else: counted as an operating cost, to be safe', 'DR-OTHER']
+];
+const PATTERNS = [
+  ['Same amount (within 1%) to the same party, once a month for 3 months or more, all within a 6-day window', 'Relabelled as a possible instalment and marked for review', 'DR-EMI'],
+  ['A payment of SAR 1,000 or more, then money back from the same party within 7 days, within 10%', 'Both legs leave turnover and operating costs (F6)', 't_T'],
+  ['Same direction, same amount, same payee and, where the lines carry one, the same reference number, within 2 days (card settlements and fees skipped)', 'The second line is a duplicate and leaves the totals (F5)', 't_T'],
+  ['The largest sales credit in a month, above 40% of that month’s net sales', 'The part above 40% leaves turnover (C8)', 't_T'],
+  ['Any line with returned-item wording, whatever its category', 'Counted once per day for bounced payments (B1)', 'n_cond']
+];
+const SALES6 = ['CR-CARD','CR-ONLINE','CR-BNPL','CR-CUST','CR-GOV','CR-CASH'];
+const TOTALS = [
+  {id:'t_T', name:'True turnover', sym:'T', uses:SALES6.concat(['DR-RET']), desc:'The six sales categories, minus circular and duplicate credits, returned receipts and refunds paid (DR-RET), and the one-off part of an outsized receipt (C8).'},
+  {id:'t_O', name:'Operating outflows', sym:'O', uses:['DR-SUP','DR-PAY','DR-GOSI','DR-RENT','DR-UTIL','DR-VAT','DR-GOVFEE','DR-FEE','DR-CARD','DR-CASH','DR-OTHER'], desc:'Every operating category, without circular or duplicate debits.'},
+  {id:'t_D', name:'Owner drawings', sym:'Draw', uses:['DR-OWNER','DR-REL'], desc:'Transfers to owners and related companies. 60% counts as committed when working out CFADS.'},
+  {id:'t_X', name:'Tax', sym:'Tax', uses:['DR-TAX'], desc:'Zakat and income tax paid. VAT is an operating cost, not tax here.'},
+  {id:'t_E', name:'Existing instalments', sym:'E', uses:['DR-EMI','DR-BNPL'], desc:'Monthly average of loan instalments and BNPL repayments, including possible instalments found by the pattern pass.'},
+  {id:'t_F', name:'Financing received', sym:'Fin', uses:['CR-FIN'], desc:'New financing paid in. Never turnover; counted for credit hunger (B6).'},
+  {id:'t_R', name:'Related-company flows', sym:'Rel', uses:['CR-REL','DR-REL'], desc:'Money to and from companies with the same owners or directors (R11).'},
+  {id:'t_C', name:'Investing', sym:'Capex', uses:['DR-CAPEX'], desc:'Equipment and vehicles: the investing section of the cash flow statement, kept out of CFADS.'},
+  {id:'t_EX', name:'Excluded money', sym:'', uses:['CR-INT','DR-INT','CR-OWNER','CR-REF'], desc:'Own-account transfers, owner injections and refunds received: kept out of turnover and costs, and reported in items j, k and r.'},
+  {id:'t_U', name:'Uncategorised share', sym:'', uses:['CR-OTHER','DR-OTHER'], desc:'The value of lines no rule placed, as a share of all money in and out. Over 10% costs 5 points of data confidence; over 25%, 10.'},
+  {id:'t_B', name:'Daily balances', sym:'B_d', uses:['b_bal'], desc:'The balance after the last line of each day, carried over days with no lines. Read straight from the balance column, not from categories.'},
+  {id:'t_S', name:'Payer shares', sym:'s_i', uses:['CR-CUST','CR-GOV'], desc:'Each customer’s share of sales, by counterparty.'},
+  {id:'t_H', name:'Channel shares', sym:'', uses:SALES6.slice(), desc:'Each sales channel’s share of sales: card, online, BNPL, transfers, government, cash.'}
+];
+function catInputs(code){
+  const u = ['b_amt', 'b_narr'];
+  if (['CR-CARD','CR-ONLINE','CR-BNPL','CR-CUST','CR-CASH','DR-SUP','DR-CARD','DR-CASH','DR-FEE','DR-PAY','DR-VAT','DR-GOSI','DR-UTIL','DR-GOVFEE'].includes(code)) u.push('b_ch');
+  if (['CR-CUST','CR-GOV','CR-FIN','CR-BNPL','DR-SUP','DR-EMI','DR-BNPL','CR-INT','DR-INT','CR-OWNER','DR-OWNER','CR-REL','DR-REL'].includes(code)) u.push('b_cp');
+  if (['CR-INT','DR-INT'].includes(code)) u.push('b_hdr');
+  if (['CR-OWNER','DR-OWNER','CR-REL','DR-REL','CR-FIN','DR-EMI'].includes(code)) u.push('a_sector');
+  return u;
+}
+const CAT_USES = {
+  x_cash:['t_T','t_O','t_D','t_X','t_E','t_F','t_C','t_EX'], x_cat:['t_H','t_T'], x_obl:['t_E','t_F'], x_conc:['t_S','DR-SUP'], x_var:['t_T'],
+  x_trf:['CR-CASH','DR-CASH','CR-INT','DR-INT','CR-OWNER','DR-OWNER'], x_bal:['t_B','t_O'], x_ext:['t_T','b_amt'], x_rec:['DR-VAT','DR-PAY','DR-RENT'],
+  x_vatrec:['t_T','v_sales'], x_yoy:['t_T','v_sales','v_pur','v_dates'], x_map:['v_sales','v_pur','v_due','CR-CUST','DR-SUP','DR-UTIL','DR-RENT','DR-FEE','DR-GOVFEE','DR-VAT'],
+  n_true:['t_T','t_EX','t_U','t_R'], n_trend:['t_T'], n_act:['t_H','t_S','CR-CUST','t_T'], n_mar:['t_T','t_O','DR-PAY','DR-RENT','DR-UTIL','DR-SUP','v_sales','v_pur'],
+  n_wc:['DR-SUP','DR-PAY','DR-GOSI','t_T'], n_dscr:['t_T','t_O','t_D','t_X','t_E'], n_od:['t_B'],
+  n_cond:['DR-EMI','DR-VAT','DR-GOSI','DR-RENT','DR-UTIL','DR-FEE','DR-RET','CR-REF','v_dates','v_due'], n_draw:['t_D','t_T','t_O','t_F','DR-BNPL'],
+  n_vat:['v_reg','v_dates','v_due','v_sales','v_pur','DR-VAT'], n_doc:['b_meta','b_hdr','v_id','b_amt','t_B'], n_pat:['b_amt','t_B','t_T','v_sales','CR-CUST','DR-SUP','CR-CASH'],
+  n_sch:['t_B','t_T','t_H','DR-SUP'], n_conf:['b_hdr','b_meta','v_id','v_sales','t_U'], n_payer:['t_S'], n_rel:['t_R','a_sector'], n_hijri:['t_T','a_sector'],
+  n_lag:['v_sales','t_T','t_S'], n_net:['t_S','b_cp','b_hdr','a_book','a_sector'], n_sim:['t_T','t_O','t_D','t_E','t_S'], n_cred:['t_T','t_O','a_sector','v_sales'],
+  n_loss:['a_sec','t_T'], n_after:['t_T','t_B','t_O']
+};
+Object.keys(CATS).forEach(code => { byId[code] = {id:code, kind:'cat', name:CATS[code][0], dir:CATS[code][1], sect:CATS[code][2], uses:catInputs(code)}; });
+TOTALS.forEach(t => { t.kind = 'tot'; byId[t.id] = t; });
+const EDGES_CAT = [];
+const edgeCls = id => byId[id].kind === 'in' ? byId[id].src : 'cat';
+Object.keys(CATS).forEach(code => byId[code].uses.forEach(u => EDGES_CAT.push({from:u, to:code, cls:edgeCls(u)})));
+TOTALS.forEach(t => t.uses.forEach(u => EDGES_CAT.push({from:u, to:t.id, cls:edgeCls(u)})));
+ANALYSES.forEach(a => {
+  if (a.id === 'n_cat') return;
+  (CAT_USES[a.id] || a.uses).forEach(u => EDGES_CAT.push({from:u, to:a.id, cls:edgeCls(u)}));
+  a.feeds.forEach(f => EDGES_CAT.push({from:a.id, to:f, cls:'out'}));
+});
+const UP = {}, DOWN = {};
+EDGES_CAT.forEach(e => { (UP[e.to] = UP[e.to] || []).push(e.from); (DOWN[e.from] = DOWN[e.from] || []).push(e.to); });
+function relatedCat(id){
+  const nodes = new Set([id]), edges = new Set();
+  const walk = (start, map, fwd) => { const stack = [start]; while (stack.length) { const x = stack.pop(); (map[x] || []).forEach(y => { edges.add(fwd ? x + '|' + y : y + '|' + x); if (!nodes.has(y)) { nodes.add(y); stack.push(y); } }); } };
+  walk(id, UP, false); walk(id, DOWN, true);
+  return {nodes, edges};
+}
+function catUsers(id){ return (DOWN[id] || []).slice(); }
+function makeCatNode(n){
+  const b = document.createElement('button');
+  b.type = 'button'; b.dataset.id = n.id;
+  b.className = 'node ' + (n.kind === 'cat' ? 'node-cat ' + (n.dir === 'in' ? 'cin' : 'cout') : 'node-tot');
+  b.innerHTML = '<span class="nm">' + n.name + '</span><span class="sub">' + (n.kind === 'cat' ? n.id : (n.sym ? n.sym + ' · ' : '') + 'monthly total') + '</span><span class="amt"></span>';
+  b.addEventListener('click', () => select(sel === n.id ? null : n.id));
+  nodeEl[n.id] = b;
+  return b;
+}
+(function buildCatBands(){
+  const cb = $('#n-cats');
+  CAT_GROUPS.forEach(([title, codes]) => {
+    const h = document.createElement('h3'); h.textContent = title; cb.appendChild(h);
+    const wrap = document.createElement('div'); wrap.className = 'nodes'; codes.forEach(c => wrap.appendChild(makeCatNode(byId[c]))); cb.appendChild(wrap);
+  });
+  const tb = $('#n-tots'); TOTALS.forEach(t => tb.appendChild(makeCatNode(t)));
+  const rule = (r, i, extra) => '<li><span class="r-n">' + (i + 1) + '</span><span class="r-t">' + r[0] + (extra ? '<small>' + extra + '</small>' : '') + '</span><button type="button" class="chip" data-go="' + r[r.length - 1] + '">' + (byId[r[r.length - 1]].kind === 'cat' ? r[r.length - 1] : byId[r[r.length - 1]].name) + '</button></li>';
+  $('#cat-rules').innerHTML = '<h2>The rules, in order</h2><p class="sub">Each line is tested from the top; the first rule that fits gives its category. Names come from the who-is-who details: owners, the business’s own accounts, related companies and lenders. Tap a code to see it on the map.</p>' +
+    '<div class="rules-grid"><div><h3>Money in (credits, CR)</h3><ol class="rules">' + RULES_IN.map((r, i) => rule(r, i)).join('') + '</ol></div>' +
+    '<div><h3>Money out (debits, DR)</h3><ol class="rules">' + RULES_OUT.map((r, i) => rule(r, i)).join('') + '</ol></div></div>' +
+    '<h3>Then the pattern pass, across lines</h3><ol class="rules">' + PATTERNS.map((p, i) => rule([p[0], p[2]], i, p[1])).join('') + '</ol>';
+  $('#cat-rules').addEventListener('click', e => { const go = e.target.closest('[data-go]'); if (go) { select(go.dataset.go); const el = nodeEl[go.dataset.go]; if (el) el.scrollIntoView({block:'center', behavior: reduceMotion ? 'auto' : 'smooth'}); } });
+})();
+function rulesFor(code){
+  const out = [];
+  RULES_IN.forEach((r, i) => { if (r[1] === code) out.push('Money-in rule ' + (i + 1) + ' of ' + RULES_IN.length + ': ' + r[0]); });
+  RULES_OUT.forEach((r, i) => { if (r[1] === code) out.push('Money-out rule ' + (i + 1) + ' of ' + RULES_OUT.length + ': ' + r[0]); });
+  PATTERNS.forEach(p => { if (p[2] === code) out.push('Pattern pass: ' + p[0]); });
+  return out;
+}
+function catAmounts(){
+  const res = STM.result, on = catMode && res && res.lines;
+  $('#cat-source').textContent = on ? 'Amounts from ' + STM.name + ' (' + fmtDate(res.first) + ' to ' + fmtDate(res.last) + ').' : 'Load a statement in Analyse a statement to see its amounts on each category and total.';
+  Object.keys(CATS).forEach(c => { const el = nodeEl[c].querySelector('.amt'), b = on && res.byCat[c]; el.textContent = b ? b.n + ' line' + (b.n > 1 ? 's' : '') + ' · ' + fmtSAR(b.in || b.out) : on ? 'none' : ''; });
+  const D = on ? res.D : null, n = on ? res.useMonths.length : 1, sumU = f => res.useMonths.reduce((a, m) => a + f(m), 0), cat = c => (res.byCat[c] || {in:0, out:0});
+  const val = {
+    t_T:() => fmtSAR(D.avgT) + ' a month', t_O:() => fmtSAR(D.avgO) + ' a month', t_D:() => fmtSAR(sumU(m => m.draw) / n) + ' a month', t_X:() => fmtSAR(sumU(m => m.tax) / n) + ' a month',
+    t_E:() => fmtSAR(D.emi) + ' a month', t_F:() => fmtSAR(cat('CR-FIN').in) + ' in total', t_R:() => fmtSAR(cat('CR-REL').in + cat('DR-REL').out) + ' in total', t_C:() => fmtSAR(cat('DR-CAPEX').out) + ' in total',
+    t_EX:() => fmtSAR(cat('CR-INT').in + cat('DR-INT').out + cat('CR-OWNER').in + cat('CR-REF').in) + ' in total', t_U:() => pct(D.uncat) + ' of value',
+    t_B:() => D.avgBal == null ? 'No balance column' : fmtSAR(D.avgBal) + ' average', t_S:() => 'Largest payer ' + pct(D.top), t_H:() => 'Card ' + pct(D.mix.card) + ', transfers ' + pct(D.mix.cust)
+  };
+  TOTALS.forEach(t => { nodeEl[t.id].querySelector('.amt').textContent = on ? val[t.id]() : ''; });
+}
+function setCatMode(on){
+  catMode = on;
+  $('#graph').classList.toggle('catmode', on);
+  $('.maplayout').classList.toggle('catmode', on);
+  $('#cat-rules').hidden = !on; $('#cat-source').hidden = !on;
+  $('#map-hint').textContent = on ? 'Every statement line passes through a category and a monthly total before any analysis reads it. Tap a box to light up its whole chain.' : 'Tap a box to see what it reads and what it changes.';
+  if (sel && (!on && byId[sel] && (byId[sel].kind === 'cat' || byId[sel].kind === 'tot') || on && sel === 'n_cat')) sel = null;
+  catAmounts(); renderDetail(); requestAnimationFrame(drawWires);
+}
+$('#cat-switch').addEventListener('change', e => setCatMode(e.target.checked));
+
 /* ---------------- views ---------------- */
 let view = 'map';
 function show(v){
-  view = v === 'applicant' ? 'applicant' : 'map';
-  const isMap = view === 'map';
-  $('#view-map').hidden = !isMap;
-  $('#view-app').hidden = isMap;
-  $('#tab-map').setAttribute('aria-selected', String(isMap));
-  $('#tab-app').setAttribute('aria-selected', String(!isMap));
-  if (isMap) requestAnimationFrame(drawWires);
+  view = v === 'applicant' ? 'applicant' : v === 'statement' ? 'statement' : 'map';
+  $('#view-map').hidden = view !== 'map';
+  $('#view-app').hidden = view !== 'applicant';
+  $('#view-stmt').hidden = view !== 'statement';
+  $('#tab-map').setAttribute('aria-selected', String(view === 'map'));
+  $('#tab-app').setAttribute('aria-selected', String(view === 'applicant'));
+  $('#tab-stm').setAttribute('aria-selected', String(view === 'statement'));
+  if (view === 'map') requestAnimationFrame(drawWires);
   updateDock();
 }
 $('#tab-map').addEventListener('click', () => { location.hash = 'map'; });
 $('#tab-app').addEventListener('click', () => { location.hash = 'applicant'; });
+$('#tab-stm').addEventListener('click', () => { location.hash = 'statement'; });
 window.addEventListener('hashchange', () => show(location.hash.slice(1)));
 
 let verdictVisible = true;
@@ -1094,6 +2216,7 @@ $('#dock').addEventListener('click', () => $('#verdict').scrollIntoView({block:'
 
 /* ---------------- init ---------------- */
 buildControls();
+stmInit();
 syncControls();
 renderPresets();
 render();
