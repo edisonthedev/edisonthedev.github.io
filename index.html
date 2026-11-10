@@ -191,7 +191,7 @@ h1{font-size:clamp(28px,4.6vw,44px);line-height:1.04;letter-spacing:-0.02em;font
 .checks li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
 .checks small{display:block;color:var(--muted);font-size:12.5px}
 .st{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
-.st.pass{color:var(--good);background:var(--good-soft)} .st.flag{color:var(--warn);background:var(--warn-soft)} .st.fail{color:var(--bad);background:var(--bad-soft)} .st.skip{color:var(--muted);background:var(--rule)}
+.st.ask{color:var(--warn);background:var(--warn-soft)} .st.pass{color:var(--good);background:var(--good-soft)} .st.flag{color:var(--warn);background:var(--warn-soft)} .st.fail{color:var(--bad);background:var(--bad-soft)} .st.skip{color:var(--muted);background:var(--rule)}
 
 /* controls */
 .group{border:1px solid var(--rule);border-radius:12px;background:var(--surface);margin-bottom:10px;overflow:hidden}
@@ -460,7 +460,7 @@ const ANALYSES = [
   {id:'n_true', name:'True turnover', ids:'R1', uses:['b_amt','b_narr','b_cp'], feeds:['o_turn','o_amt'], desc:'Gross credits minus internal transfers, owner injections, financing received, refunds and circular returns. Everything downstream uses this number.', measures:['Adjusted monthly turnover','Share of credits removed, by reason']},
   {id:'n_trend', name:'Growth and seasonality', ids:'R3, R4', uses:['b_amt'], feeds:['o_grade','o_sched','o_tenor'], desc:'Which way the business is heading and the shape of its year.', measures:['12-month growth slope','Last 3 months vs prior 3','Seasonal index by month']},
   {id:'n_act', name:'Trading activity and channel mix', ids:'R6 to R9', uses:['b_ch','b_amt','b_cp'], feeds:['o_gen','o_grade','o_sched'], desc:'How the business gets paid, how often it trades, and whether its ticket sizes fit its sector.', measures:['Channel mix and drift (R6)','Active trading days, longest gap (R7)','Ticket size vs sector (R8)','B2B payer regularity (R9)']},
-  {id:'n_mar', name:'Margins and cost structure', ids:'M1 to M5', uses:['v_sales','v_pur','b_narr','b_amt'], feeds:['o_grade','o_turn','o_amt'], desc:'What the business keeps from each riyal of sales, and how much of its cost is fixed.', measures:['Implied gross margin from VAT (M1)','Cash operating margin (M2)','Payroll, rent, utility ratios (M3)','Fixed vs variable split, break-even (M4, M5)']},
+  {id:'n_mar', name:'Margins and cost structure', ids:'M1 to M5', uses:['v_sales','v_pur','b_narr','b_amt'], feeds:['o_grade','o_turn','o_amt'], desc:'What the business keeps from each riyal of sales, and how much of its cost is fixed.', measures:['VAT sales–purchases spread, not a gross margin (M1)','Cash operating margin (M2)','Payroll, rent, utility ratios (M3)','Fixed vs variable split, break-even (M4, M5)']},
   {id:'n_wc', name:'Working capital and headcount', ids:'M6, M7', uses:['b_narr','b_amt','b_cp'], feeds:['o_amt','o_tenor','o_gen'], desc:'How far purchases run ahead of sales, and a staff estimate from payroll and GOSI.', measures:['Days purchases lead sales (M6)','Headcount and revenue per head (M7)']},
   {id:'n_dscr', name:'Debt service and stress tests', ids:'C1 to C4', uses:['b_amt','b_narr'], feeds:['o_elig','o_amt','o_tenor'], desc:'Cash available for debt service, cover before and after the new instalment, and cover when turnover falls 20%.', measures:['Cash flow available for debt service (C1)','Cover ratio, average and worst quarter (C2)','Cover at −20% turnover (C3)','Existing debt burden and lender count (C4)']},
   {id:'n_od', name:'Overdraft and drawdown', ids:'C6, C7', uses:['b_bal'], feeds:['o_elig','o_grade'], desc:'How often the account goes below zero and how deep the worst dip is.', measures:['Days below zero and depth (C6)','Largest balance drawdown and recovery (C7)']},
@@ -475,10 +475,10 @@ const ANALYSES = [
   {id:'n_payer', name:'Payer quality', ids:'R10', uses:['b_cp','b_ch'], feeds:['o_grade','o_amt'], desc:'Who pays the business, not just how concentrated they are. Government and large corporates rarely fail but can pay late; SMEs can fail.', measures:['Main payer type: government, corporate, SME or individuals','Payment-delay and payer-failure shocks fed into the simulation (C9)','Adjustment to the revenue-quality score']},
   {id:'n_rel', name:'Related-party flows', ids:'R11', uses:['b_cp','a_sector'], feeds:['o_turn','o_amt','o_gen'], desc:'Money to and from companies with the same owners or directors. Treated like owner transfers, because it is not trading.', measures:['Receipts from related companies, removed from turnover','Payments to related companies, treated like drawings','Related share of credits and debits']},
   {id:'n_hijri', name:'Hijri-aligned seasonality', ids:'R12, optional', uses:['b_amt','a_sector'], feeds:['o_sched'], desc:'For businesses whose peak follows Ramadan and Eid, the peak moves about 11 days earlier each Gregorian year. Off by default.', measures:['Peak month for each year of the tenor','Used by the seasonal schedule (S2) and the simulation (C9)']},
-  {id:'n_lag', name:'Lag-adjusted VAT reconciliation', ids:'V10', uses:['v_sales','b_amt','b_cp'], feeds:['o_gen','o_grade'], desc:'VAT sales are invoiced; statements show cash. Allowing for the collection lag stops slow-paying customers being mistaken for an undisclosed account.', measures:['Collection lag from payer intervals (R9)','Coverage shifted by the lag, over rolling two-quarter windows','Tolerance band widens by 0.1 per 100 days of lag','Only Box 1 grossed up at 15%']},
+  {id:'n_lag', name:'Lag-adjusted VAT reconciliation', ids:'V10', uses:['v_sales','b_amt','b_cp'], feeds:['o_gen','o_grade'], desc:'VAT sales are usually invoiced; statements show cash. Allowing for the collection lag stops slow-paying customers being mistaken for an undisclosed account. Cash-basis VAT filers need no lag, and a far-off gap asks for information rather than declining.', measures:['Collection lag from VAT periods lined up with later receipts, or aged receivables (entered by hand in the demo)','Coverage shifted by the lag, over rolling two-quarter windows','Tolerance band widens by 0.1 per 100 days of lag','Only Box 1 grossed up at 15%']},
   {id:'n_net', name:'Cross-applicant network', ids:'F13', uses:['b_cp','b_hdr','a_book','a_sector'], feeds:['o_gen'], desc:'Links between this applicant and others: shared counterparties, IBANs, owners or addresses. It finds fraud rings, and borrowers that all depend on one buyer.', measures:['Shared owner, IBAN or address: soft flag','Common buyers across the book','Circular flows between applicants']},
-  {id:'n_sim', name:'Cash-flow simulation and PD over the tenor', ids:'C9 to C11', uses:['b_amt','b_bal','b_cp'], feeds:['o_amt','o_tenor','o_grade','o_price'], desc:'Simulates 600 monthly cash-flow paths over the term to find the chance each instalment is missed, keeps the chance of 90+ days past due under 5%, and spreads the 12-month PD over the tenor.', measures:['Chance each instalment is missed (C9)','Turnover fall before cover breaks (C10)','Cumulative and lifetime PD (C11)']},
-  {id:'n_cred', name:'Credibility weighting', ids:'Z1', uses:['a_sector','b_amt','v_sales'], feeds:['o_grade','o_amt','o_sched'], desc:'Blends the business’s own growth, seasonality, margin and variability with sector priors, weighted by how many months of data back them.', measures:['Z = n ÷ (n + 4)','12 months of data: 75% own figures, 25% sector','Under 12 months: seasonality from the sector alone']},
+  {id:'n_sim', name:'Cash-flow simulation and PD over the tenor', ids:'C9 to C11', uses:['b_amt','b_bal','b_cp'], feeds:['o_amt','o_tenor','o_grade','o_price'], desc:'Simulates 600 monthly cash-flow paths over the term to find the chance each instalment is missed, keeps the chance of 90+ days past due under 5%, and spreads the 12-month PD over the tenor.', measures:['Chance each instalment is missed (C9), a scenario estimate until validated','Starting buffer capped at the actual average balance','Turnover fall before cover breaks (C10)','Cumulative and lifetime PD (C11); month 12 equals the 12-month PD']},
+  {id:'n_cred', name:'Credibility weighting', ids:'Z1', uses:['a_sector','b_amt','v_sales'], feeds:['o_grade','o_amt','o_sched'], desc:'Blends the business’s own growth, seasonality, margin and variability with sector priors, weighted by how many months of data back them.', measures:['Z = n ÷ (n + 4)','12 months of data: 75% own figures, 25% sector','Uses the more cautious of own and blended, so a weak figure is never lifted','Under 12 months: seasonality from the sector alone']},
   {id:'n_loss', name:'Loss and pricing', ids:'L1 to L5', uses:['a_sec','b_amt'], feeds:['o_price','o_amt'], desc:'Turns PD into an expected loss in riyals and a profit rate that covers it, then checks the return on capital.', measures:['LGD by security (L1)','Exposure each month (L2)','Lifetime expected loss (L3)','Risk-based profit rate (L4)','Return on capital against the hurdle (L5)']},
   {id:'n_after', name:'Monitoring and validation', ids:'A1, A2, after launch', uses:['b_amt','b_bal','b_narr'], feeds:['o_grade'], desc:'Starts once financing is on the book: monthly reruns on the live account for early warning and IFRS 9 staging, and validation of the scorecard against real outcomes.', measures:['Behavioural score and watch-list (A1)','IFRS 9 stage triggers (A1)','Gini, calibration, PSI and reject inference (A2)']}
 ];
@@ -717,7 +717,7 @@ function simulate(b, pays, Pbar){
   let defaults = 0;
   for (let p = 0; p < SIM_PATHS; p++) {
     const o = p * 36;
-    let buf = Pbar + b.surplus, arrears = 0, run = 0, dead = false;
+    let buf = b.cash != null ? Math.min(Pbar + b.surplus, Math.max(0, b.cash)) : Pbar + b.surplus, arrears = 0, run = 0, dead = false;
     for (let t = 0; t < n; t++) {
       if (dead) { miss[t]++; cum[t]++; continue; }
       let cash = buf + b.cf[o + t];
@@ -742,7 +742,7 @@ const PRESETS = [
   {name:'Over-stretched borrower', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:300000, growth:-15, season:20, cv:25, peak:7, hijri:false, margin:9, age:4, top:20, payer:'individuals', pos:60, inflowDay:10, largest:15, related:0, emi:70000, drawings:40, bounces:5, missed:2, negDays:38, cov:0.95, lag:0, onTime:70, vatYears:2, vatGrowth:-12, match:85, edited:false, mismatch:false, circular:0, spikes:false, pass:35, linked:false, security:'none', requested:500000}},
   {name:'Edited statement', v:{sector:'retail', months:12, vatStatus:'returns', cfs:true, source:'pdf', turnover:450000, growth:12, season:15, cv:12, peak:2, hijri:false, margin:14, age:6, top:8, payer:'individuals', pos:75, inflowDay:5, largest:12, related:0, emi:15000, drawings:20, bounces:0, missed:0, negDays:0, cov:1.02, lag:0, onTime:100, vatYears:2, vatGrowth:10, match:92, edited:true, mismatch:false, circular:0, spikes:false, pass:25, linked:false, security:'pg', requested:600000}}
 ];
-const S = Object.assign({extraFlagCodes:[], uncat:0}, PRESETS[0].v);
+const S = Object.assign({extraFlagCodes:[], uncat:0, stmt:null, tax:0, vatOk:true, idOk:true, fileOk:true, balData:true, dataIssues:[], unverShare:0, emiConf:null, cash:null, cpWeak:false}, PRESETS[0].v);
 let activePreset = 0;
 
 const sign = v => v > 0 ? '+' + v : v < 0 ? '−' + Math.abs(v) : '0';
@@ -766,6 +766,7 @@ const CONTROLS = [
   ]},
   {group:'Obligations and conduct', items:[
     {k:'emi', label:'Existing monthly instalments', min:0, max:200000, step:1000, fmt:fmtSAR, help:'d'},
+    {k:'tax', label:'Zakat and income tax, monthly', min:0, max:100000, step:500, fmt:fmtSAR, help:'Comes off cash available to repay (C1)'},
     {k:'drawings', label:'Owner drawings, share of cash profit', min:0, max:100, step:5, fmt:v => v + '%', help:'B5'},
     {k:'bounces', label:'Returned or bounced payments, 12 months', min:0, max:8, step:1, fmt:String, help:'B1. Four or more declines'},
     {k:'missed', label:'Late or missed instalments, 12 months', min:0, max:6, step:1, fmt:String, help:'B2. Three or more declines'},
@@ -776,7 +777,10 @@ const CONTROLS = [
     {k:'vatStatus', label:'VAT status', type:'select', options:[['returns','Registered, returns provided'],['noreturns','Registered, returns missing'],['none','Not registered']]},
     {k:'cfs', label:'Cash flow statement provided', type:'toggle'},
     {k:'source', label:'How statements arrive', type:'select', options:[['pdf','Native PDF from the bank'],['scan','Scanned image'],['ob','Open-banking feed']]},
-    {k:'uncat', label:'Uncategorised statement lines, share of value', min:0, max:60, step:1, fmt:v => v + '%', help:'Categorisation layer. Over 10% costs data confidence'}
+    {k:'uncat', label:'Uncategorised statement lines, share of value', min:0, max:60, step:1, fmt:v => v + '%', help:'Categorisation layer. Over 10% costs data confidence'},
+    {k:'idOk', label:'Identity checked against the CR and VAT certificate', type:'toggle', help:'F3. Off means Request information'},
+    {k:'fileOk', label:'Document forensics run on the bank’s own file', type:'toggle', help:'F1. A spreadsheet export cannot be checked'},
+    {k:'vatOk', label:'VAT return figures entered and checked', type:'toggle', help:'Only matters when returns are provided'}
   ]},
   {group:'VAT', items:[
     {k:'cov', label:'Statement credits ÷ VAT-declared sales', min:0.3, max:2.2, step:0.01, fmt:v => Number(v).toFixed(2), help:'R2. Box 1 grossed up at 15%; 0.7 to 1.3 is normal before the lag adjustment', dep:'returns'},
@@ -837,7 +841,7 @@ function buildControls(){
       else if (c.type === 'select') S[c.k] = c.num ? Number(el.value) : el.value;
       else if (c.type === 'log') S[c.k] = logToVal(c, Number(el.value));
       else S[c.k] = Number(el.value);
-      activePreset = -1;
+      activePreset = -1; S.stmt = null;
       syncOutputs(); renderPresets(); render();
     });
   }));
@@ -872,38 +876,46 @@ $('#presets').addEventListener('click', e => {
   const b = e.target.closest('[data-i]');
   if (!b) return;
   activePreset = Number(b.dataset.i);
-  Object.assign(S, {extraFlagCodes:[], uncat:0}, PRESETS[activePreset].v);
+  Object.assign(S, {extraFlagCodes:[], uncat:0, stmt:null, tax:0, vatOk:true, idOk:true, fileOk:true, balData:true, dataIssues:[], unverShare:0, emiConf:null, cash:null, cpWeak:false}, PRESETS[activePreset].v);
   syncControls(); renderPresets(); render();
 });
 
 function compute(s){
   const sec = SECTORS[s.sector] || SECTORS.retail, payer = PAYERS[s.payer] || PAYERS.individuals;
-  const circ = s.circular / 100, rel = s.related / 100, T0 = s.turnover;
-  const big = s.largest / 100, oneOff = big > 0.4 ? (big - 0.4) * T0 / 12 : 0;
-  const T = Math.max(1, T0 * (1 - circ - rel) - oneOff);
-  const d = s.drawings / 100;
-  const registered = s.vatStatus !== 'none', returns = s.vatStatus === 'returns';
+  const X = s.stmt || null;   // exact monthly figures from an analysed statement, when present
+  const circ = X ? X.circ : s.circular / 100, rel = X ? X.rel : s.related / 100, T0 = X ? X.T0 : s.turnover;
+  const big = s.largest / 100, oneOff = X ? X.oneOff : big > 0.4 ? (big - 0.4) * T0 / 12 : 0;
+  const T = X ? Math.max(1, X.T) : Math.max(1, T0 * (1 - circ - rel) - oneOff);
+  const d = X ? X.d : s.drawings / 100;
+  const tax = X ? X.tax : (s.tax || 0);
+  const emiAll = X ? X.emi : s.emi, emiConf = X ? X.emiConf : (s.emiConf != null ? s.emiConf : s.emi);
+  const cash = X ? X.cash : (s.cash != null ? s.cash : null);
+  // a check that was not performed is never a pass
+  const vatUnverified = s.vatStatus === 'returns' && s.vatOk === false;
+  const vatState = s.vatStatus === 'none' ? 'none' : (s.vatStatus === 'returns' && !vatUnverified) ? 'returns' : 'noreturns';
+  const registered = s.vatStatus !== 'none', returns = vatState === 'returns';
   const yoy = returns && s.vatYears === 2;
 
   // Z1 credibility weighting
   const Zm = s.months / (s.months + CRED_K), nG = s.months + (yoy ? 12 : 0), Zg = nG / (nG + CRED_K), Zs = s.months >= 12 ? Zm : 0;
-  const gOwn = yoy ? Math.min(s.growth, s.vatGrowth) : s.growth;
+  const gStmt = X ? X.g : s.growth, gOwn = yoy ? Math.min(gStmt, s.vatGrowth) : gStmt;
   const cred = [
-    {k:'g', name:'Growth', own:gOwn, prior:sec.g, Z:Zg, f:v => (v > 0.05 ? '+' : v < -0.05 ? '−' : '') + Math.abs(v).toFixed(1) + '%'},
-    {k:'sw', name:'Seasonal swing', own:s.season, prior:sec.sw, Z:Zs, f:v => '±' + v.toFixed(1) + '%'},
-    {k:'m', name:'Cash margin', own:s.margin, prior:sec.m, Z:Zm, f:v => v.toFixed(1) + '%'},
-    {k:'cv', name:'Variability', own:s.cv, prior:sec.cv, Z:Zm, f:v => v.toFixed(1) + '%'}
+    {k:'g', name:'Growth', own:gOwn, prior:sec.g, Z:Zg, up:true, f:v => (v > 0.05 ? '+' : v < -0.05 ? '−' : '') + Math.abs(v).toFixed(1) + '%'},
+    {k:'sw', name:'Seasonal swing', own:X ? X.sw : s.season, prior:sec.sw, Z:Zs, up:false, f:v => '±' + v.toFixed(1) + '%'},
+    {k:'m', name:'Cash margin', own:X ? X.m * 100 : s.margin, prior:sec.m, Z:Zm, up:true, f:v => v.toFixed(1) + '%'},
+    {k:'cv', name:'Variability', own:X ? X.cv : s.cv, prior:sec.cv, Z:Zm, up:false, f:v => v.toFixed(1) + '%'}
   ];
   const U = {};
-  cred.forEach(c => { c.used = c.Z * c.own + (1 - c.Z) * c.prior; U[c.k] = c.used; });
+  // one-sided: blending with the sector can only make a figure more cautious, never rescue a weak one
+  cred.forEach(c => { const b = c.Z * c.own + (1 - c.Z) * c.prior; c.blend = b; c.used = c.up ? Math.min(c.own, b) : Math.max(c.own, b); U[c.k] = c.used; });
   const g = U.g / 100, sw = U.sw / 100, m = U.m / 100, cv = U.cv / 100;
 
   const keep = 1 - 0.6 * d;
   const v = 0.8 * (1 - m), Fx = 0.2 * T * (1 - m);
-  const cfAvg = T * m * keep;
-  const cfStress = Math.max(0, T * (0.8 - 0.84 * (1 - m))) * keep;
-  const pMax = Math.min(cfAvg / 1.25, cfStress) - s.emi;
-  const burden = s.emi / T;
+  const cfAvg = T * m * keep - tax;
+  const cfStress = Math.max(0, T * (0.8 - 0.84 * (1 - m))) * keep - tax;
+  const pMax = Math.min(cfAvg / 1.25, cfStress) - emiAll;
+  const burden = emiConf / T;   // the knock-out uses confirmed instalments; capacity uses all of them
 
   // V10 lag-adjusted coverage (R2 uses Box 1 grossed up only)
   const L = returns ? s.lag : 0;
@@ -918,7 +930,7 @@ function compute(s){
   fraud.push({code:'F7', name:'Month-end spikes', node:'n_pat', status:s.spikes ? 'flag' : 'pass', note:s.spikes ? 'Balance lifted around month-end' : 'None found'});
   fraud.push({code:'F8', name:'Pass-through', node:'n_pat', status:s.pass > 70 ? 'flag' : 'pass', note:s.pass + '% pass through a near-empty account within 48 hours'});
   if (returns) {
-    const st = (covAdj < 0.4 || covAdj > 2.0) ? 'fail' : (covAdj < lo || covAdj > hi) ? 'flag' : 'pass';
+    const st = (covAdj < 0.4 || covAdj > 2.0) ? 'ask' : (covAdj < lo || covAdj > hi) ? 'flag' : 'pass';
     fraud.push({code:'F11', name:'VAT vs statements', node:'n_lag', status:st, note:'Coverage ' + covAdj.toFixed(2) + (L ? ' after the ' + L + '-day lag' : '') + ', band ' + lo.toFixed(2) + ' to ' + hi.toFixed(2)});
   } else {
     fraud.push({code:'F11', name:'VAT vs statements', node:'n_lag', status:'skip', note:'No returns to compare'});
@@ -931,7 +943,7 @@ function compute(s){
   const hard = fraud.filter(f => f.status === 'fail'), soft = fraud.filter(f => f.status === 'flag');
 
   const ded = [];
-  if (s.vatStatus === 'noreturns') ded.push([15, 'VAT returns missing', 'Certificate only; request the returns']);
+  if (vatState === 'noreturns') ded.push([15, vatUnverified ? 'VAT returns not yet checked' : 'VAT returns missing', vatUnverified ? 'Said to be provided; enter and check their figures' : 'Certificate only; request the returns']);
   if (s.vatStatus === 'none') ded.push([20, 'Not VAT-registered', 'Statements only; VAT checks switched off']);
   if (returns && s.vatYears !== 2) ded.push([5, 'One year of VAT returns', 'No year-on-year check (V8); request the last 8 quarters']);
   if (!s.cfs) ded.push([10, 'No cash flow statement', 'Synthetic statement built from categorised lines (t)']);
@@ -939,8 +951,18 @@ function compute(s){
   if (s.source === 'scan') ded.push([10, 'Scanned statements', 'OCR, with stricter F1 and F2 checks']);
   if ((s.uncat || 0) > 25) ded.push([10, 'Many statement lines uncategorised', s.uncat + '% of value could not be labelled; review them']);
   else if ((s.uncat || 0) > 10) ded.push([5, 'Some statement lines uncategorised', s.uncat + '% of value could not be labelled']);
+  if ((s.extraFlagCodes || []).some(c => c.code === 'F12')) ded.push([15, 'Gaps inside the statement period', 'Never filled in by estimate; request the missing part']);
+  if (s.cpWeak) ded.push([5, 'Counterparty names missing', 'Most transfers name no payer or payee, so concentration figures are low-confidence']);
   if (returns && covAdj < lo) ded.push([15, 'Possible undisclosed account', 'Coverage under the band even after the lag (R2, V10); request other statements']);
   if (soft.length) ded.push([5 * soft.length, soft.length + ' soft flag' + (soft.length > 1 ? 's' : ''), soft.map(f => f.code).join(', ')]);
+  const pending = [];
+  if (vatUnverified) pending.push(['V', 'VAT returns said to be provided but not yet entered or checked', 'n_vat']);
+  if (s.idOk === false) pending.push(['F3', 'Identity not checked: match the account name, IBAN and VAT number to the CR and VAT certificate', 'n_doc']);
+  if (s.fileOk === false) pending.push(['F1', 'Document forensics not run: a spreadsheet export cannot show edits; get the bank’s PDF or an open-banking feed', 'n_doc']);
+  if (s.balData === false) pending.push(['C6', 'No balance column: days below zero, balance dressing, pass-through and the instalment day are unavailable', 'n_od']);
+  if (returns && (covAdj < 0.4 || covAdj > 2.0)) pending.push(['F11', 'VAT and bank figures are far apart: request other accounts, the VAT accounting basis (cash or invoice) and any VAT group details', 'n_lag']);
+  if ((s.unverShare || 0) > 10) pending.push(['R1', s.unverShare + '% of credits come from payers seen once with no company name; confirm who they are', 'n_true']);
+  (s.dataIssues || []).forEach(x => pending.push([x.code, x.text, x.node]));
   const conf = Math.max(0, 100 - ded.reduce((a, x) => a + x[0], 0));
   const kappa = conf / 100;
 
@@ -949,7 +971,7 @@ function compute(s){
   sc.rev = clamp(100 * (0.30 * clamp((U.g + 20) / 50) + 0.30 * clamp(1 - (s.top - 15) / 60) + 0.20 * clamp(1 - sw / 0.6) + 0.20 * clamp(1 - (cv - 0.10) / 0.40)) + payer.adj, 0, 100);
   sc.con = clamp(100 - 14 * s.bounces - 18 * s.missed - (registered ? 0.35 * (100 - s.onTime) : 0) - (d > 0.5 ? (d - 0.5) * 60 : 0), 0, 100);
   sc.mar = 100 * clamp((m - 0.02) / 0.18);
-  sc.vat = s.vatStatus === 'none' ? 35 : s.vatStatus === 'noreturns' ? 40 : 100 * (0.5 * clamp(1 - Math.max(0, Math.abs(covAdj - 1) - (0.1 + 0.001 * L)) / 0.5) + 0.3 * s.onTime / 100 + 0.2 * s.match / 100);
+  sc.vat = vatState === 'none' ? 35 : vatState === 'noreturns' ? 40 : 100 * (0.5 * clamp(1 - Math.max(0, Math.abs(covAdj - 1) - (0.1 + 0.001 * L)) / 0.5) + 0.3 * s.onTime / 100 + 0.2 * s.match / 100);
   sc.pro = 100 * (0.75 * clamp((s.age - 1) / 5) + 0.25 * Math.min(s.months, 12) / 12);
   const score = Math.round(10 * WEIGHTS.reduce((a, w) => a + w[2] * sc[w[0]], 0));
   let grade = score >= 800 ? 'A' : score >= 700 ? 'B' : score >= 600 ? 'C' : score >= 500 ? 'D' : 'E';
@@ -962,7 +984,7 @@ function compute(s){
   if (s.bounces >= 4) knock.push(['B1', s.bounces + ' returned or bounced payments in 12 months', 'n_cond']);
   if (s.missed >= 3) knock.push(['B2', s.missed + ' late or missed instalments in 12 months', 'n_cond']);
   if (s.negDays > 30) knock.push(['C6', s.negDays + ' days below zero', 'n_od']);
-  if (burden > 0.35) knock.push(['C4', 'Existing instalments take ' + pct(burden) + ' of turnover', 'n_dscr']);
+  if (burden > 0.35) knock.push(['C4', 'Confirmed existing instalments take ' + pct(burden) + ' of turnover', 'n_dscr']);
   if (s.age < 1) knock.push(['Policy', 'Under one year trading', 'o_elig']);
   if (pMax <= 0) knock.push(['C3', 'No room for a new instalment once turnover falls 20%', 'n_dscr']);
 
@@ -973,7 +995,7 @@ function compute(s){
     if (s.months < 12) nMax = Math.min(nMax, 12);
     nMax = Math.min(nMax, Math.max(6, Math.floor(s.age * 12 / 6) * 6));
     const start = (new Date().getMonth() + 1) % 12;
-    const simBase = {T, g, sw, cv, m, keep, emi:s.emi, peak:s.peak, hijri:s.hijri, payer, top:s.top / 100, surplus:Math.max(0, cfAvg - s.emi)};
+    const simBase = {T, g, sw, cv, m, keep, emi:emiAll + tax, peak:s.peak, hijri:s.hijri, payer, top:s.top / 100, surplus:Math.max(0, cfAvg - emiAll), cash};
     simBase.cf = buildCF(simBase, start);
     const seasonalOn = s.months >= 12 && sw >= 0.1;
     const sizeAt = rate => {
@@ -992,8 +1014,8 @@ function compute(s){
         let pays;
         if (seasonalOn) {
           const w = months.map((mo, i) => Math.sqrt(Math.max(0.05, seasonF(mo, i, s.peak, sw, s.hijri))));
-          const mean = w.reduce((a, b) => a + b, 0) / w.length;
-          pays = w.map(x => P * x / mean);
+          const c = A / w.reduce((a, x, i) => a + x / Math.pow(1 + r, i + 1), 0);
+          pays = w.map(x => c * x);
         } else pays = months.map(() => P);
         return {n, P, months, pays};
       };
@@ -1023,12 +1045,11 @@ function compute(s){
       const h = 1 - Math.pow(1 - pd, 1 / 12);
       const mbar = sim.miss.reduce((a, b) => a + b, 0) / sim.miss.length;
       let w = sim.miss.map(x => mbar > 0 ? 0.5 + 0.5 * x / mbar : 1);
-      const wm = w.reduce((a, b) => a + b, 0) / w.length;
-      w = w.map(x => x / wm);
+      for (let b0 = 0; b0 < w.length; b0 += 12) { const blk = w.slice(b0, b0 + 12), bm = blk.reduce((a, x) => a + x, 0) / blk.length; for (let i = b0; i < Math.min(w.length, b0 + 12); i++) w[i] = w[i] / bm; }
       let surv = 1, prev = 0, O = amount, EL = 0, expo = 0;
       const cumPD = [];
       for (let t = 0; t < chosen.n; t++) {
-        surv *= 1 - Math.min(0.99, h * w[t]);
+        surv *= Math.pow(1 - h, w[t]);
         const c = 1 - surv;
         cumPD.push(c);
         EL += (c - prev) * lgd * O;
@@ -1045,7 +1066,7 @@ function compute(s){
       return {amount, amount0, n:chosen.n, nMax, P, pays:chosen.pays, months:chosen.months, sim, cumPD, pdLife:cumPD[cumPD.length - 1],
         limits, bind, raw, rate, r, seasonal:seasonalOn, cutBySim, lengthened, lgd, EL, ELrate, capCharge, build, reqRate:req, capped,
         raroc:(rate - PRICE.funds - PRICE.ops - ELrate) / PRICE.capital,
-        day:((s.inflowDay + 3 - 1) % 28) + 1, split:s.pos >= 60 ? P / (T * s.pos / 100) : null, dscrNew:cfAvg / (s.emi + P)};
+        day:((s.inflowDay + 3 - 1) % 28) + 1, split:s.pos >= 60 ? P / (T * s.pos / 100) : null, dscrNew:cfAvg / (emiAll + P)};
     };
     let rate = G.rate, res = null;
     for (let it = 0; it < 4; it++) {
@@ -1059,16 +1080,18 @@ function compute(s){
     else offer = res;
   }
   const Pst = offer ? offer.P : 0;
-  const revStress = clamp(1 - ((Pst + s.emi) / keep + Fx) / (T * (1 - v)));
+  const revStress = clamp(1 - ((Pst + emiAll + tax) / keep + Fx) / (T * (1 - v)));
 
   let decision, tone;
   if (hard.length || knock.length || grade === 'E') { decision = 'Decline'; tone = 'bad'; }
+  else if (pending.length) { decision = 'Request information'; tone = 'warn'; }
   else if (soft.length >= 2 || grade === 'D' || conf < 60 || (offer && offer.capped)) { decision = 'Manual review'; tone = 'warn'; }
   else { decision = 'Approve'; tone = 'good'; }
 
   const reasons = [];
   hard.forEach(f => reasons.push({tone:'bad', code:f.code, node:f.node, text:f.name + ': ' + f.note.charAt(0).toLowerCase() + f.note.slice(1)}));
   knock.forEach(k => reasons.push({tone:'bad', code:k[0], node:k[2], text:k[1]}));
+  pending.forEach(x => reasons.push({tone:'warn', code:x[0], node:x[2], text:x[1]}));
   if (grade === 'E' && !hard.length) reasons.push({tone:'bad', code:'Score', node:'o_grade', text:'Score ' + score + ' is under 500'});
   if (soft.length >= 2) reasons.push({tone:'warn', code:soft.map(f => f.code).join(', '), node:'n_pat', text:soft.length + ' soft flags need an underwriter’s look'});
   else if (soft.length === 1) reasons.push({tone:'info', code:soft[0].code, node:soft[0].node, text:'One soft flag: ' + soft[0].name.toLowerCase() + ', noted but not blocking'});
@@ -1080,7 +1103,8 @@ function compute(s){
   if (rel > 0) reasons.push({tone:'info', code:'R11', node:'n_rel', text:fmtSAR(T0 * rel) + ' a month from related companies removed from turnover'});
   if (oneOff > 0) reasons.push({tone:'info', code:'C8', node:'x_ext', text:'One receipt is ' + s.largest + '% of its month; ' + fmtSAR(oneOff * 12) + ' a year treated as one-off'});
   if (returns && L > 0 && (covRaw < 0.7 || covRaw > 1.3) && covAdj >= lo && covAdj <= hi) reasons.push({tone:'info', code:'V10', node:'n_lag', text:'Coverage ' + covRaw.toFixed(2) + ' would have flagged; inside the band once the ' + L + '-day collection lag is allowed for'});
-  if (Zm < 0.7) reasons.push({tone:'info', code:'Z1', node:'n_cred', text:'Short history: own figures weighted ' + Math.round(Zm * 100) + '% against the ' + sec.name.toLowerCase() + ' sector'});
+  if (Zm < 0.7) reasons.push({tone:'info', code:'Z1', node:'n_cred', text:'Short history: own figures weighted ' + Math.round(Zm * 100) + '% against the ' + sec.name.toLowerCase() + ' sector, and only where that is more cautious'});
+  if (tax > 0) reasons.push({tone:'info', code:'C1', node:'n_dscr', text:fmtSAR(tax) + ' a month of zakat and tax comes off cash available to repay'});
   if (offer) {
     const bt = {cap:'Cash flow capacity', turn:'The grade’s turnover cap', pol:'The policy cap', req:'The amount requested'}[offer.bind.key];
     reasons.push({tone:'info', code:offer.bind.code, node:offer.bind.node, text:bt + ' sets the amount'});
@@ -1090,7 +1114,7 @@ function compute(s){
     if (offer.seasonal) reasons.push({tone:'info', code:s.hijri ? 'R12' : 'S2', node:s.hijri ? 'n_hijri' : 'n_sch', text:s.hijri ? 'Instalments follow the Hijri peak, moving about 11 days earlier each year' : 'Instalments follow the seasons, highest around ' + MONTHS[s.peak]});
     if (offer.split) reasons.push({tone:'info', code:'S5', node:'n_sch', text:'Can repay as ' + (offer.split * 100).toFixed(1) + '% of daily card sales'});
   }
-  return {T0, T, circ, rel, oneOff, yoy, m, sec, payer, cred, L, covRaw, covAdj, lo, hi, cfAvg, cfStress, pMax, burden, revStress, returns, registered, fraud, hard, soft, ded, conf, kappa, sc, score, grade, ageCap, pd, knock, offer, decision, tone, reasons};
+  return {pending, tax, emiAll, emiConf, X, T0, T, circ, rel, oneOff, yoy, m, sec, payer, cred, L, covRaw, covAdj, lo, hi, cfAvg, cfStress, pMax, burden, revStress, returns, registered, fraud, hard, soft, ded, conf, kappa, sc, score, grade, ageCap, pd, knock, offer, decision, tone, reasons};
 }
 
 const pctR = x => (x * 100).toFixed(2).replace(/\.?0+$/, '') + '%';
@@ -1114,7 +1138,7 @@ function render(){
   let v = '<p class="v-state">' + R.decision + '</p>';
   if (o && R.decision !== 'Decline') {
     v += '<p class="v-sum">' + fmtSAR(o.amount) + ' over ' + o.n + ' months at ' + pctR(o.rate) + ' a year, about ' + fmtSAR(o.P) + ' a month</p>';
-    v += '<p class="v-note">' + (R.decision === 'Manual review' ? 'Indicative offer, subject to an underwriter. ' : '') + 'Grade ' + R.grade + ', instalment on day ' + o.day + ' of each month.</p>';
+    v += '<p class="v-note">' + (R.decision === 'Manual review' ? 'Indicative offer, subject to an underwriter. ' : R.decision === 'Request information' ? 'Indicative offer, once the items below are confirmed. ' : '') + 'Grade ' + R.grade + ', instalment on day ' + o.day + ' of each month.</p>';
   } else {
     v += '<p class="v-sum">No offer</p><p class="v-note">The reasons below name the analysis that stopped it.</p>';
   }
@@ -1164,7 +1188,7 @@ function render(){
   p += '<section class="panel"><h3>Data confidence ' + R.conf + '%</h3><div class="meter"><i style="width:' + R.conf + '%;background:' + confCol + '"></i></div>';
   p += R.ded.length ? '<ul class="ded">' + R.ded.map(d => '<li><b>−' + d[0] + '</b><span>' + d[1] + '<small>' + d[2] + '</small></span></li>').join('') + '</ul>' : '<p style="margin:0">Every input is present and clean, so nothing is cut.</p>';
   p += '</section>';
-  const stName = {pass:'Pass', flag:'Flag', fail:'Fail', skip:'Not run'};
+  const stName = {pass:'Pass', flag:'Flag', fail:'Fail', skip:'Not run', ask:'Ask'};
   p += '<section class="panel"><h3>Fraud gate and VAT cross-checks</h3><ul class="checks">' + R.fraud.map(f => '<li><button type="button" class="code" data-node="' + f.node + '">' + f.code + '</button><span>' + f.name + '<small>' + f.note + '</small></span><span class="st ' + f.status + '">' + stName[f.status] + '</span></li>').join('') + '</ul></section>';
   p += '<section class="panel span2"><h3>Turnover and cash flow</h3><dl class="kv">';
   p += '<dt>Statement credits, monthly</dt><dd>' + fmtSAR(R.T0) + '</dd>';
@@ -1254,8 +1278,9 @@ const RX = {
   capex:/MOTORS|AUTOMOTIVE|\bAUTO\b|VEHICLE|\bCARS?\b|EQUIPMENT|MACHINER|معدات|سيارات|اليات/,
   transfer:/TRANSFER|\bTRF\b|SARIE|\bIPS\b|INSTANT|SWIFT|REMITTANCE|INWARD|OUTWARD|حواله|تحويل/,
   feeLead:/^\s*(\S+\s+){0,2}(رسوم|عموله|FEES?\b|CHARGES?\b|COMMISSION)|BANK CHARGES|PAY(MADA|VISA|MCCR|GN|AMEX)|اداره نقاط البيع/,
-  supplier:/SUPPLIER|VENDOR|INVOICE|\bBILL PAYMENT\b|BUYING ?GOODS|مورد|فاتوره|شراء بضا/,
-  swift:/SWIFT|INTERNATIONAL|FOREIGN|REMITTANCE|حواله دوليه|خارجيه/
+  supplier:/SUPPLIER|VENDOR|INVOICE|\bBILL PAYMENT\b|BUYING ?GOODS|INVENTORY|\bSTOCK\b|مورد|فاتوره|شراء بضا|مخزون/,
+  swift:/SWIFT|INTERNATIONAL|FOREIGN|REMITTANCE|حواله دوليه|خارجيه/,
+  company:/شركه|مؤسسه|مصنع|مكتب|\bCO\b|\bEST\b|LLC|LTD|TRADING|COMPANY|FACTORY|CORP|HOTEL|GROUP/
 };
 const NOISE = new Set(('SARIE IPS INSTANT TRANSFER TRF TRANSFERRED INCOMING OUTGOING INWARD OUTWARD FROM PAYMENT PMT REF IBAN LOCAL ONLINE MOBILE BANKING CREDIT DEBIT ACCOUNT ACC THE AND FOR VIA BANK SWIFT REMITTANCE BENEFICIARY FUND OUT SAR BUYING GOODS BUYINGGOODS VALUEDATE ' +
   'حواله وارده صادره من الي تحويل رقم حساب سداد دفع مبلغ عبر لصالح فوريه محليه داخلي المستفيد عنوان الغرض التحويل بنك مصرف مستخدما القنوات الرقميه للشركات اسم المفوتر الفاتوره الاشتراك مرجع العمليه التاريخ وقت فى في دائن مدين ريال سعودي شراء بضاعه بضائع شركه مؤسسه التجاريه للتجاره التجاره ستحقاق الاستحقاق سعر الصرف السبب لملف ملف العموله الرسوم خلا خلال اون لاين DEAR ' +
@@ -1300,7 +1325,8 @@ function toUTC(cell, dayFirst){
   let d, mo;
   if (p.kind === 'ymd') { mo = p.a; d = p.b; } else if (p.kind === 'dmy') { d = p.a; mo = p.b; } else if (dayFirst) { d = p.a; mo = p.b; } else { mo = p.a; d = p.b; }
   if (mo < 1 || mo > 12 || d < 1 || d > 31 || p.y < 1990 || p.y > 2100) return null;
-  return Date.UTC(p.y, mo - 1, d);
+  const u = Date.UTC(p.y, mo - 1, d);
+  return new Date(u).getUTCDate() === d ? u : null;
 }
 const DAY = 86400000;
 const ymKey = t => { const d = new Date(t); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
@@ -1357,14 +1383,14 @@ function buildLines(rows, hdr, map){
     for (const r of body) { const c = r[map.date]; if (typeof c !== 'string') continue; const p = dateParts(c); if (!p || p.kind !== 'num') continue; if (p.a > 12) { dayFirst = true; break; } if (p.b > 12) { dayFirst = false; break; } }
   }
   if (dayFirst === null) dayFirst = true;
-  const lines = []; let opening = null, skipped = 0;
+  const lines = []; let opening = null, skipped = 0, badDates = 0;
   body.forEach((r, k) => {
     const g = key => map[key] != null ? r[map[key]] : null;
     const desc = String(g('desc') == null ? '' : g('desc')).trim();
     const t = map.date != null ? toUTC(g('date'), dayFirst) : null;
     const bal = parseNum(g('balance'));
     if (/OPENING|BROUGHT FORWARD|B\/F|رصيد افتتاحي|الرصيد السابق/i.test(normText(desc)) && bal != null) { opening = bal; return; }
-    if (t == null) { skipped++; return; }
+    if (t == null) { skipped++; if (map.date != null && String(g('date') == null ? '' : g('date')).trim()) badDates++; return; }
     let dr = 0, cr = 0;
     if (map.debit != null || map.credit != null) { dr = Math.abs(parseNum(g('debit')) || 0); cr = Math.abs(parseNum(g('credit')) || 0); }
     if (!dr && !cr && map.amount != null) {
@@ -1374,7 +1400,7 @@ function buildLines(rows, hdr, map){
     if (!dr && !cr) { skipped++; return; }
     lines.push({k, t, desc, mode:String(g('mode') == null ? '' : g('mode')).trim(), ref:String(g('ref') == null ? '' : g('ref')), cpRaw:String(g('cp') == null ? '' : g('cp')), dr, cr, bal, flags:{}});
   });
-  return {lines, opening, skipped, dayFirst};
+  return {lines, opening, skipped, dayFirst, badDates};
 }
 function cpKey(s){
   let u = normText(s).replace(/SA\d{2}[0-9A-Z]{10,30}/g, ' ').replace(/\d[\d\/\-:.]{3,}/g, ' ').replace(/[^A-Z\u0600-\u06FF ]/g, ' ');
@@ -1427,7 +1453,7 @@ function categorise(lines, ctx){
     if (RX.penalty.test(u)) { l.flags.penalty = true; return set('DR-FEE', 'Penalty or fine wording'); }
     if (RX.fee.test(u) && (!RX.transfer.test(u) || RX.feeLead.test(u))) return set('DR-FEE', /PAY(MADA|VISA|MCCR|GN|AMEX)|اداره نقاط البيع/.test(u) ? 'Card-processing (merchant) fee' : 'Fee or charge wording');
     if (RX.cashWd.test(u)) return set('DR-CASH', 'Cash withdrawal wording');
-    if (RX.capex.test(u)) return set('DR-CAPEX', 'Vehicle or equipment seller');
+    if (RX.capex.test(u) && !RX.supplier.test(u)) return set('DR-CAPEX', 'Vehicle or equipment seller');
     if (RX.cardSpend.test(u) && !RX.transfer.test(u)) return set('DR-CARD', 'Card purchase wording');
     if (RX.supplier.test(u)) return set('DR-SUP', 'Supplier or invoice wording');
     if (RX.transfer.test(u) || l.cpRaw) return set('DR-SUP', 'Transfer to a named party');
@@ -1447,7 +1473,7 @@ function patternPass(lines){
       const c = g.slice(i, j), months = new Set(c.map(l => ymKey(l.t)));
       const days = c.map(l => new Date(l.t).getUTCDate());
       if (months.size >= 3 && months.size === c.length && Math.max(...days) - Math.min(...days) <= 6)
-        c.forEach(l => { l.cat = 'DR-EMI'; l.why = 'Same amount on about the same day for ' + months.size + ' months: possible instalment, review'; l.flags.patternEMI = true; });
+        c.forEach(l => { l.why += '; same amount on about the same day for ' + months.size + ' months, so possibly an instalment: confirm'; l.flags.patternEMI = true; });
       i = j;
     }
   });
@@ -1459,10 +1485,10 @@ function patternPass(lines){
   const seen = {};
   lines.forEach(l => {
     if (l.cat === 'CR-CARD' || l.cat === 'DR-FEE') return;
-    const refs = (normText(l.desc + ' ' + l.ref).match(/\d{6,}/g) || []).sort((a, c) => c.length - a.length);
+    const refs = String(l.ref || '').trim() ? [normText(l.ref).replace(/\s+/g, '')] : (normText(l.desc).match(/\d{6,}/g) || []).sort((a, c) => c.length - a.length);
     const key = (l.cr > 0 ? 'c' : 'd') + '|' + (l.cr || l.dr).toFixed(2) + '|' + (l.cp || l.U.slice(0, 30));
     const prev = seen[key];
-    if (prev && l.t - prev.t <= 2 * DAY && (!refs.length || !prev.refs.length || refs[0] === prev.refs[0])) { l.flags.duplicate = true; l.pair = prev; }
+    if (prev && l.t - prev.t <= 2 * DAY && ((!refs.length && !prev.refs.length) || (refs.length && prev.refs.length && refs[0] === prev.refs[0]))) { l.flags.duplicate = true; l.pair = prev; }
     l.refs = refs;
     seen[key] = Object.assign(l, {refs:l.refs || []});
   });
@@ -1472,7 +1498,7 @@ function patternPass(lines){
 function analyseStatement(rows, hdr, map, ctxIn){
   const res = {warnings:[], flags:[]};
   const b = buildLines(rows, hdr, map);
-  let lines = b.lines; res.skipped = b.skipped;
+  let lines = b.lines; res.skipped = b.skipped; res.badDates = b.badDates; res.opening = b.opening;
   if (lines.length < 10) { res.error = 'Fewer than 10 transactions could be read. Check the column mapping, or that the dates are Gregorian.'; return res; }
   if (lines[0].t > lines[lines.length - 1].t) lines.reverse();
   lines = lines.map((l, i) => Object.assign(l, {o:i})).sort((a, c) => a.t - c.t || a.o - c.o);
@@ -1485,7 +1511,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
     while (i < lines.length) {
       let j = i; while (j < lines.length && lines[j].t === lines[i].t) j++;
       const grp = lines.slice(i, j);
-      if (prev === null) { const f = grp[0]; prev = f.bal != null ? f.bal - f.cr + f.dr : null; }
+      if (prev === null) { const f = grp[0]; prev = b.opening != null ? b.opening : f.bal != null ? f.bal - f.cr + f.dr : null; }
       while (grp.length) {
         let idx = grp.findIndex(l => l.bal != null && prev != null && Math.abs(prev + l.cr - l.dr - l.bal) < 0.011);
         if (idx < 0) idx = 0;
@@ -1501,13 +1527,20 @@ function analyseStatement(rows, hdr, map, ctxIn){
     biz:nameMatcher(ctxIn.business ? [ctxIn.business] : []), owner:nameMatcher(ctxIn.owners), related:nameMatcher(ctxIn.related), lender:nameMatcher(ctxIn.lenders)};
   categorise(lines, ctx);
   patternPass(lines);
+  const cuMonths = {};
+  lines.filter(l => l.cat === 'CR-CUST' && l.cp).forEach(l => { (cuMonths[l.cp] = cuMonths[l.cp] || new Set()).add(ymKey(l.t)); });
+  lines.forEach(l => {
+    if (l.cat !== 'CR-CUST') return;
+    const company = RX.company.test(normText(l.cpRaw || l.desc)), repeat = l.cp && cuMonths[l.cp] && cuMonths[l.cp].size >= 2;
+    if (!company && !repeat) { l.flags.unverified = true; l.why += '; payer seen once with no company name, so left out of turnover until confirmed'; }
+  });
   res.lines = lines;
   const first = lines[0].t, last = lines[lines.length - 1].t;
   res.first = first; res.last = last;
   // months and aggregates
   const calMk = [];
   for (let d = new Date(first); d.getTime() <= last; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))) calMk.push(ymKey(d.getTime()));
-  const isFull = p => first <= p.s + 3 * DAY && last >= p.e - 3 * DAY;
+  const isFull = p => first <= p.s + 7 * DAY && last >= p.e - 7 * DAY;
   let periods = calMk.map(k => { const y = +k.slice(0, 4), mo = +k.slice(5) - 1; return {k, s:Date.UTC(y, mo, 1), e:Date.UTC(y, mo + 1, 1) - DAY, label:fmtMonth(k)}; });
   res.rolling = false;
   if (periods.filter(isFull).length < 3 && last - first >= 59 * DAY) {
@@ -1521,7 +1554,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
   const mk = periods.map(p => p.k);
   res.periodLabel = {}; periods.forEach(p => { res.periodLabel[p.k] = p.label; });
   const M = {};
-  mk.forEach(k => { M[k] = {k, G:0, salesGross:0, ret:0, circ:0, dup:0, rel:0, O:0, draw:0, tax:0, emi:0, capex:0, endBal:null, n:0, salesN:0, largest:0, card:0, online:0, bnpl:0, cust:0, gov:0, cash:0, unkIn:0, unkOut:0, out:0, salesItems:[]}; });
+  mk.forEach(k => { M[k] = {k, G:0, salesGross:0, ret:0, circ:0, dup:0, unver:0, rel:0, O:0, draw:0, tax:0, emi:0, capex:0, endBal:null, n:0, salesN:0, largest:0, card:0, online:0, bnpl:0, cust:0, gov:0, cash:0, unkIn:0, unkOut:0, out:0, salesItems:[]}; });
   const byCat = {};
   lines.forEach(l => {
     const m = M[pk(l.t)]; m.n++;
@@ -1530,7 +1563,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
       m.G += l.cr;
       if (SALES_CODES.includes(l.cat)) {
         m.salesGross += l.cr;
-        if (l.flags.circular) m.circ += l.cr; else if (l.flags.duplicate) m.dup += l.cr;
+        if (l.flags.circular) m.circ += l.cr; else if (l.flags.duplicate) m.dup += l.cr; else if (l.flags.unverified) m.unver += l.cr;
         else { m.salesN++; m.largest = Math.max(m.largest, l.cr); m[{'CR-CARD':'card','CR-ONLINE':'online','CR-BNPL':'bnpl','CR-CUST':'cust','CR-GOV':'gov','CR-CASH':'cash'}[l.cat]] += l.cr; if (l.cat === 'CR-CUST') m.salesItems.push(l.cr); }
       }
       if (l.cat === 'CR-REL') m.rel += l.cr;
@@ -1549,7 +1582,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
   });
   const Ms = mk.map(k => M[k]);
   Ms.forEach(m => {
-    const net = m.salesGross - m.circ - m.dup - m.ret;
+    const net = m.salesGross - m.circ - m.dup - m.unver - m.ret;
     m.share = net > 0 ? m.largest / net : 0;
     m.oneOff = Math.max(0, m.share - 0.4) * Math.max(0, net);
     m.T = Math.max(0, net - m.oneOff);
@@ -1561,7 +1594,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
   res.months = Ms; res.useMonths = use; res.byCat = byCat;
   const n = use.length;
   const sum = f => use.reduce((a, m) => a + f(m), 0);
-  const T = sum(m => m.T), O = sum(m => m.O), draw = sum(m => m.draw), salesNet = sum(m => m.salesGross - m.circ - m.dup - m.ret);
+  const T = sum(m => m.T), O = sum(m => m.O), draw = sum(m => m.draw), salesNet = sum(m => m.salesGross - m.circ - m.dup - m.unver - m.ret);
   const totalIn = lines.reduce((a, l) => a + l.cr, 0), totalOut = lines.reduce((a, l) => a + l.dr, 0);
   const unkIn = (byCat['CR-OTHER'] || {in:0}).in, unkOut = (byCat['DR-OTHER'] || {out:0}).out;
   const D = {};
@@ -1569,8 +1602,10 @@ function analyseStatement(rows, hdr, map, ctxIn){
   D.margin = T > 0 ? (T - O) / T : 0;
   D.draws = (T - O) > 0 ? Math.min(1, draw / (T - O)) : (draw > 0 ? 1 : 0);
   D.emi = sum(m => m.emi) / n;
-  D.burden = D.avgT > 0 ? D.emi / D.avgT : 0;
-  D.T0 = sum(m => m.salesGross - m.dup - m.ret + m.rel) / n;
+  D.emiConf = res.lines ? lines.filter(l => (l.cat === 'DR-EMI' || l.cat === 'DR-BNPL') && !l.flags.patternEMI && res.useMonths.some(m => m.k === pk(l.t))).reduce((a, l) => a + l.dr, 0) / n : D.emi;
+  D.burden = D.avgT > 0 ? D.emiConf / D.avgT : 0;
+  D.T0 = sum(m => m.salesGross - m.dup - m.unver - m.ret + m.rel) / n;
+  D.tax = sum(m => m.tax) / n; D.oneOffM = sum(m => m.oneOff) / n; D.unver = sum(m => m.unver) / n;
   D.circ = D.T0 > 0 ? sum(m => m.circ) / n / D.T0 : 0;
   D.rel = D.T0 > 0 ? sum(m => m.rel) / n / D.T0 : 0;
   D.largest = Math.max(...use.map(m => m.share));
@@ -1586,7 +1621,8 @@ function analyseStatement(rows, hdr, map, ctxIn){
   if (n >= 12) { const idx = use.map(m => m.T / mean(Ts)); const mx = Math.max(...idx); D.swing = mx - 1; D.peak = +use[idx.indexOf(mx)].k.slice(5) - 1; } else { D.swing = 0; D.peak = null; }
   // payers (R5, R10-ready)
   const payers = {};
-  lines.filter(l => (l.cat === 'CR-CUST' || l.cat === 'CR-GOV') && !l.flags.circular && !l.flags.duplicate).forEach(l => { const p = payers[l.cp || '(unnamed)'] = payers[l.cp || '(unnamed)'] || {sum:0, n:0, months:new Set(), gov:l.cat === 'CR-GOV'}; p.sum += l.cr; p.n++; p.months.add(pk(l.t)); });
+  const useKeys = new Set(use.map(m => m.k));
+  lines.filter(l => (l.cat === 'CR-CUST' || l.cat === 'CR-GOV') && !l.flags.circular && !l.flags.duplicate && !l.flags.unverified && useKeys.has(pk(l.t))).forEach(l => { const p = payers[l.cp || '(unnamed)'] = payers[l.cp || '(unnamed)'] || {sum:0, n:0, months:new Set(), gov:l.cat === 'CR-GOV'}; p.sum += l.cr; p.n++; p.months.add(pk(l.t)); });
   const plist = Object.entries(payers).sort((a, c) => c[1].sum - a[1].sum);
   D.top = salesNet > 0 && plist.length ? plist[0][1].sum / salesNet : 0;
   D.topName = plist.length ? plist[0][0] : '';
@@ -1619,7 +1655,7 @@ function analyseStatement(rows, hdr, map, ctxIn){
   D.bounces = new Set(lines.filter(l => l.flags.returned).map(l => l.t)).size;
   // EMI conduct (B2): late or missing months per instalment series
   const series = {};
-  lines.filter(l => l.cat === 'DR-EMI').forEach(l => { const key = (l.cp || 'EMI') + '|' + Math.round(l.dr / 100); (series[key] = series[key] || []).push(l); });
+  lines.filter(l => l.cat === 'DR-EMI' && !l.flags.patternEMI).forEach(l => { const key = (l.cp || 'EMI') + '|' + Math.round(l.dr / 100); (series[key] = series[key] || []).push(l); });
   let late = 0; const drift = [];
   Object.values(series).forEach(s => {
     if (s.length < 3) return;
@@ -1706,11 +1742,56 @@ function analyseStatement(rows, hdr, map, ctxIn){
   D.uncat = (totalIn + totalOut) > 0 ? (unkIn + unkOut) / (totalIn + totalOut) : 0;
   D.missingMonths = missingMonths; D.maxGap = maxGap; D.gapAt = gapAt;
   D.patternEMI = lines.filter(l => l.flags.patternEMI).length;
+  D.possEmi = lines.filter(l => l.flags.patternEMI && res.useMonths.some(m => m.k === pk(l.t))).reduce((a, l) => a + l.dr, 0) / n;
   const COMPANY = /شركه|مؤسسه|مصنع|مكتب|\bCO\b|\bEST\b|LLC|LTD|TRADING|COMPANY|FACTORY|CORP/;
   const indiv = {};
   lines.filter(l => l.cat === 'DR-SUP' && l.dr >= 10000 && l.cp && !COMPANY.test(normText(l.desc))).forEach(l => { const p = indiv[l.cp] = indiv[l.cp] || {sum:0, n:0}; p.sum += l.dr; p.n++; });
   D.indiv = Object.entries(indiv).sort((a, c) => c[1].sum - a[1].sum); D.indivSum = D.indiv.reduce((a, x) => a + x[1].sum, 0);
   D.swiftIn = lines.filter(l => l.cr > 0 && RX.swift.test(l.U)).reduce((a, l) => a + l.cr, 0);
+
+  // ---- more from the same lines: original items a, f, n, o, p, s, t; M3 to M6; B3, B4, B6, B7; R9
+  const E = res.extra = {};
+  const secOf = l => l.cr > 0 ? (SALES_CODES.includes(l.cat) ? 'opIn' : (l.cat === 'CR-FIN' || l.cat === 'CR-OWNER') ? 'finIn' : 'othIn')
+    : (OPS_CODES.includes(l.cat) || l.cat === 'DR-RET') ? 'opOut' : l.cat === 'DR-TAX' ? 'tax' : l.cat === 'DR-CAPEX' ? 'inv' : (l.cat === 'DR-INT') ? 'othOut' : 'finOut';
+  E.cfs = {}; mk.forEach(k => { E.cfs[k] = {opIn:0, opOut:0, tax:0, inv:0, finIn:0, finOut:0, othIn:0, othOut:0}; });
+  E.catMonth = {};
+  lines.forEach(l => { const k = pk(l.t); E.cfs[k][secOf(l)] += l.cr || l.dr; const c = E.catMonth[l.cat] = E.catMonth[l.cat] || {}; c[k] = (c[k] || 0) + (l.cr || l.dr); });
+  E.tie = res.hasBal && daily.length ? (daily[daily.length - 1].bal - (lines[0].bal - lines[0].cr + lines[0].dr)) - (totalIn - totalOut) : null;
+  if (daily.length) {
+    const b = daily.map(x => x.bal), skip = new Set();
+    quick.forEach(q => { for (let t = q.t; t <= q.t + 5 * DAY; t += DAY) skip.add(t); });
+    const kept = daily.filter(x => !skip.has(x.t));
+    E.bal = {avg:mean(b), min:Math.min(...b), max:Math.max(...b), minT:daily[b.indexOf(Math.min(...b))].t, maxT:daily[b.indexOf(Math.max(...b))].t, avgEx:kept.length ? mean(kept.map(x => x.bal)) : null, skipped:daily.length - kept.length};
+  }
+  const byAmt = (f, dir) => lines.filter(f).sort((a, c) => dir * ((c.cr || c.dr) - (a.cr || a.dr)))[0];
+  E.ext = {maxCr:byAmt(l => l.cr > 0, 1), minCr:byAmt(l => l.cr > 0, -1), maxDr:byAmt(l => l.dr > 0, 1), minDr:byAmt(l => l.dr > 0, -1)};
+  const sup = {}; let supTot = 0;
+  lines.filter(l => l.cat === 'DR-SUP' && !l.flags.circular && !l.flags.duplicate && useKeys.has(pk(l.t))).forEach(l => { const k = l.cp || '(unnamed)'; sup[k] = (sup[k] || 0) + l.dr; supTot += l.dr; });
+  const supList = Object.entries(sup).sort((a, c) => c[1] - a[1]);
+  E.sup = {n:supList.length, top:supTot > 0 && supList.length ? supList[0][1] / supTot : 0, topName:supList.length ? supList[0][0] : '', hhi:supTot > 0 ? supList.reduce((a, x) => a + (x[1] / supTot) ** 2, 0) : 0};
+  const useSum = code => lines.filter(l => l.cat === code && useKeys.has(pk(l.t))).reduce((a, l) => a + l.dr, 0);
+  E.ratios = T > 0 ? {pay:useSum('DR-PAY') / T, rent:useSum('DR-RENT') / T, util:useSum('DR-UTIL') / T, sup:useSum('DR-SUP') / T} : null;
+  E.regular = [['DR-PAY', 'Payroll'], ['DR-GOSI', 'GOSI'], ['DR-RENT', 'Rent'], ['DR-UTIL', 'Utilities and telecom'], ['DR-VAT', 'VAT to ZATCA']].map(([c, name]) => { const ms = new Set(lines.filter(l => l.cat === c && useKeys.has(pk(l.t))).map(l => pk(l.t))); return {c, name, paid:ms.size, of:n, missing:use.filter(m => !ms.has(m.k)).map(m => res.periodLabel[m.k])}; });
+  const recent = lines.filter(l => l.t > last - 90 * DAY);
+  E.hunger = {finN:recent.filter(l => l.cat === 'CR-FIN').length, finV:recent.filter(l => l.cat === 'CR-FIN').reduce((a, l) => a + l.cr, 0), bnplN:recent.filter(l => l.cat === 'DR-BNPL').length, lenders:new Set(lines.filter(l => l.cat === 'DR-EMI' || l.cat === 'CR-FIN').map(l => l.cp || '?')).size};
+  const feeLines = lines.filter(l => l.cat === 'DR-FEE' && useKeys.has(pk(l.t))), isCard = l => /Card-processing|VAT on a bank or card/.test(l.why);
+  E.fees = {card:feeLines.filter(isCard).reduce((a, l) => a + l.dr, 0), bank:feeLines.filter(l => !isCard(l)).reduce((a, l) => a + l.dr, 0), penalties:feeLines.filter(l => l.flags.penalty).length, load:T > 0 ? feeLines.filter(l => !isCard(l)).reduce((a, l) => a + l.dr, 0) / T : 0, cardLoad:T > 0 ? feeLines.filter(isCard).reduce((a, l) => a + l.dr, 0) / T : 0};
+  if (n >= 6) {
+    const xs = use.map(m => m.T), ys = use.map(m => m.O), xb = mean(xs), yb = mean(ys), sxx = xs.reduce((a, x) => a + (x - xb) ** 2, 0);
+    if (sxx > 0) { const v = xs.reduce((a, x, i) => a + (x - xb) * (ys[i] - yb), 0) / sxx, F = yb - v * xb, okFit = v > 0 && v < 1 && F >= 0;
+      E.cost = {v, F, ok:okFit, be:okFit ? F / (1 - v) : null, mos:okFit ? (xb - F / (1 - v)) / xb : null, below:okFit ? use.filter(m => m.T < F / (1 - v)).length : null}; }
+  }
+  E.payers = plist.filter(p => p[1].n >= 4).slice(0, 5).map(([name, p]) => { const ts = lines.filter(l => (l.cat === 'CR-CUST' || l.cat === 'CR-GOV') && (l.cp || '(unnamed)') === name && !l.flags.unverified).map(l => l.t).sort((a, c) => a - c), gaps = ts.slice(1).map((t, i) => (t - ts[i]) / DAY);
+    const lastG = gaps.slice(-3), early = gaps.slice(0, -3); return {name, n:ts.length, every:mean(gaps), drift:early.length && mean(early) > 0 ? mean(lastG) / mean(early) - 1 : null}; });
+  const wk = t => Math.floor((t - first) / (7 * DAY)), nW = wk(last) + 1;
+  if (nW >= 26) { const sw = new Array(nW).fill(0), sl = new Array(nW).fill(0);
+    lines.forEach(l => { if (l.cat === 'DR-SUP') sw[wk(l.t)] += l.dr; else if (SALES_CODES.includes(l.cat)) sl[wk(l.t)] += l.cr; });
+    const corr = (a, b) => { const am = mean(a), bm = mean(b), num = a.reduce((x, v, i) => x + (v - am) * (b[i] - bm), 0), den = Math.sqrt(a.reduce((x, v) => x + (v - am) ** 2, 0) * b.reduce((x, v) => x + (v - bm) ** 2, 0)); return den > 0 ? num / den : 0; };
+    let best = 0, bestC = -2; for (let k = 0; k <= 12; k++) { const c = corr(sw.slice(0, nW - k), sl.slice(k)); if (c > bestC) { bestC = c; best = k; } }
+    E.lag = {weeks:best, corr:bestC};
+  }
+  const tr = lines.filter(l => l.cat === 'CR-CUST' || l.cat === 'DR-SUP');
+  D.cpMissing = tr.length ? tr.filter(l => !l.cp).length / tr.length : 0;
   res.D = D; res.totalIn = totalIn; res.totalOut = totalOut;
 
   // ---- flags ----
@@ -1743,11 +1824,14 @@ function analyseStatement(rows, hdr, map, ctxIn){
   if (D.outliers.length) add('info', 'Outliers', 'x_ext', D.outliers.length + ' transaction' + (D.outliers.length > 1 ? 's' : '') + ' far out of line for their category', 'Robust z-score above 3.5 against the category’s median. Listed below.');
   if (D.salesGap > 14) add('soft', 'R7', 'n_act', 'No sales for ' + D.salesGap + ' days in a row', 'Long silent stretches point to a closed, seasonal or shell business.');
   if (D.burden > 0.35) add('hard', 'C4', 'n_dscr', 'Existing instalments take ' + pct(D.burden) + ' of turnover', 'Above 35% is a knock-out.');
-  if (D.patternEMI) add('info', 'CAT', 'n_cat', D.patternEMI + ' payment' + (D.patternEMI > 1 ? 's' : '') + ' treated as possible instalments', 'Same amount on about the same day for three months or more, with no lender name. Counted as instalments to be safe; review them.');
+  if (D.patternEMI) add(D.possEmi >= Math.max(5000, 0.02 * D.avgT) ? 'soft' : 'info', 'd', 'x_obl', fmtSAR(D.possEmi) + ' a month of fixed payments could be instalments', 'Same amount to the same party on about the same day for three months or more, with no lender name. Kept as operating costs; confirm whether any are loan repayments.', ex(lines.filter(l => l.flags.patternEMI)));
   if (D.indiv.length) add('info', 'CAT', 'n_cat', fmtSAR(D.indivSum) + ' of transfers went to ' + D.indiv.length + ' individual' + (D.indiv.length > 1 ? 's' : ''), 'Transfers of SAR 10,000 or more to people rather than companies, counted as supplier payments. If any are owners or partners, add their names under Who is who so they count as drawings. Largest: ' + D.indiv.slice(0, 4).map(x => x[0] + ' ' + fmtSAR(x[1].sum)).join('; ') + '.');
+  const unvLines = lines.filter(l => l.flags.unverified);
+  if (unvLines.length) add(D.unver / Math.max(1, D.T0 + D.unver) > 0.1 ? 'soft' : 'info', 'R1', 'n_true', fmtSAR(unvLines.reduce((a, l) => a + l.cr, 0)) + ' from ' + unvLines.length + ' transfer' + (unvLines.length > 1 ? 's' : '') + ' by payers seen once', 'No company name and no repeat payment, so these are left out of turnover until the payer is confirmed (a customer, an owner, a lender).', ex(unvLines));
+  if (res.badDates) add('soft', 'F12', 'n_doc', res.badDates + ' row' + (res.badDates > 1 ? 's' : '') + ' with an impossible or unreadable date', 'Skipped, not guessed. Request a clean export.');
   if (D.uncat > 0.1) add('soft', 'CAT', 'n_cat', pct(D.uncat) + ' of the statement’s value is uncategorised', 'Over 10% costs data confidence. Add owner, account or company names, or review the lines.');
   if (D.mix.cash > 0.3) add('info', 'R6', 'n_act', 'Cash is ' + pct(D.mix.cash) + ' of sales', 'Cash is the hardest channel to verify.');
-  if (D.margin < 0) add('soft', 'C3', 'n_dscr', 'Operating cash flow is negative on the statement (' + pct(D.margin, 1) + ' of turnover)', 'Operating costs take all of real sales. With a short history the engine blends this margin with the sector’s (Z1), which lifts it; on the statement alone there is no room for an instalment.');
+  if (D.margin < 0) add('hard', 'C3', 'n_dscr', 'Operating cash flow is negative (' + pct(D.margin, 1) + ' of turnover)', 'Operating costs take all of real sales, so there is no room for an instalment. Sector blending (Z1) can only make figures more cautious, so it does not lift this.');
   return res;
 }
 
@@ -1766,7 +1850,12 @@ function statementInputs(res, form){
     cov:1, lag:0, onTime:100, vatYears:form.vatStatus === 'returns' ? 2 : 1, vatGrowth:form.vatStatus === 'returns' ? cl(Math.round(D.growth * 100), -40, 60) : 0, match:form.vatStatus === 'returns' ? 100 : 0,
     edited:res.breaks.length > 0 && res.breaks.length <= res.lines.length * 0.5, mismatch:false, circular:cl(Math.round(D.circ * 100), 0, 40),
     spikes:D.spikeMonths.length >= 3 || D.quick.length > 0, pass:r5(cl(D.pass * 100, 0, 100)), linked:false, security:form.security, requested:form.requested,
-    uncat:cl(Math.round(D.uncat * 100), 0, 60), extraFlagCodes:extra
+    uncat:cl(Math.round(D.uncat * 100), 0, 60), extraFlagCodes:extra, cpWeak:D.cpMissing > 0.5,
+    tax:cl(Math.round(D.tax / 500) * 500, 0, 100000), emiConf:D.emiConf, cash:D.avgBal,
+    stmt:{T0:D.T0, T:D.avgT, circ:D.T0 > 0 ? D.circ : 0, rel:D.rel, oneOff:D.oneOffM, m:D.margin, d:D.draws, tax:D.tax, emi:D.emi, emiConf:D.emiConf, cash:D.avgBal, g:D.growth * 100, cv:D.cv * 100, sw:D.swing * 100},
+    vatOk:form.vatStatus !== 'returns', idOk:false, fileOk:false, balData:res.hasBal,
+    unverShare:Math.round(100 * D.unver / Math.max(1, D.T0 + D.unver)),
+    dataIssues:(res.badDates ? [{code:'F12', text:res.badDates + ' rows had impossible or unreadable dates; request a clean export', node:'n_doc'}] : []).concat(D.possEmi >= Math.max(5000, 0.02 * D.avgT) ? [{code:'d', text:fmtSAR(D.possEmi) + ' a month of fixed payments could be loan instalments; confirm against SIMAH or the lender', node:'x_obl'}] : [])
   };
 }
 
@@ -1939,7 +2028,7 @@ function stmRender(res, form){
   const o = R.offer;
   let h = '<div class="verdict ' + R.tone + '"><p class="v-state">' + R.decision + '</p>';
   h += o && R.decision !== 'Decline' ? '<p class="v-sum">' + fmtSAR(o.amount) + ' over ' + o.n + ' months at ' + pctR(o.rate) + ' a year, about ' + fmtSAR(o.P) + ' a month</p>' : '<p class="v-sum">No offer</p>';
-  h += '<p class="v-note">From this statement plus the details on the left. Security, years trading and the amount requested come from the form; everything else from the statement.' + (form.vatStatus === 'returns' ? ' VAT returns are assumed to agree with the statement until you enter their figures in Try an applicant.' : '') + '</p>';
+  h += '<p class="v-note">From this statement plus the details on the left. Security, years trading and the amount requested come from the form; everything else from the statement.' + (form.vatStatus === 'returns' ? ' The VAT returns are not checked yet: enter their figures in Try an applicant and switch on “VAT return figures entered and checked”.' : '') + '</p>';
   h += '<ul class="reasons">' + R.reasons.slice(0, 8).map(x => '<li><button type="button" class="code ' + (x.tone === 'bad' ? 'bad' : x.tone === 'warn' ? 'warn' : '') + '" data-node="' + x.node + '">' + x.code + '</button><span>' + x.text + '</span></li>').join('') + '</ul>';
   if (R.decision === 'Decline' && R.knock.length === 1 && R.knock[0][0] === 'Data' && !R.hard.length && R.grade !== 'E') {
     const R6 = compute(Object.assign({}, S, inp, {months:6})), o6 = R6.offer;
@@ -1989,9 +2078,54 @@ function stmRender(res, form){
     row('Days cash on hand (C5) and worst drawdown (C7)', D.dcoh != null ? Math.round(D.dcoh) + ' days; ' + pct(D.drawdown) : 'No balance column', 'Reported only') +
     row('Uncategorised share of value', pct(D.uncat), 'Uncategorised ' + inp.uncat + '%') +
     '</tbody></table></div></section>';
+  if (R.X) {
+    const own = R.cred.find(c => c.k === 'm'), mOwn = own.own / 100, cfOwn = R.T * mOwn * (1 - 0.6 * R.X.d) - R.tax;
+    const stCF = res.useMonths.reduce((a, m) => a + m.cfads, 0) / res.useMonths.length, same = (x, y) => Math.abs(x - y) < 0.01 ? 'Same' : 'Differs';
+    const r3 = (a, b, c, e) => '<tr><td>' + a + '</td><td>' + b + '</td><td>' + c + '</td><td>' + e + '</td></tr>';
+    h += '<section class="panel span2"><h3>Statement and engine, side by side</h3><p class="sub">The engine runs on the statement’s exact monthly figures, not the rounded slider values. The only adjustment is credibility weighting (Z1), which can only make a figure more cautious.</p><div class="tbl-wrap"><table class="ctab ltab"><thead><tr><th>Figure</th><th>Statement</th><th>Engine</th><th>Why</th></tr></thead><tbody>' +
+      r3('True turnover, monthly (R1)', fmtSAR(D.avgT), fmtSAR(R.T), same(D.avgT, R.T)) +
+      r3('Cash operating margin (M2)', pct(D.margin, 1), pct(R.m, 1), Math.abs(R.m - D.margin) < 1e-6 ? 'Same' : 'Z1: own ' + pct(mOwn, 1) + ' against the sector’s ' + own.prior.toFixed(1) + '%, using the more cautious') +
+      r3('Owner drawings, share of cash profit (B5)', pct(D.draws), pct(R.X.d), same(D.draws, R.X.d)) +
+      r3('Zakat and income tax, monthly', fmtSAR(D.tax), fmtSAR(R.tax), same(D.tax, R.tax)) +
+      r3('Existing instalments, monthly (capacity)', fmtSAR(D.emi), fmtSAR(R.emiAll), same(D.emi, R.emiAll)) +
+      r3('Confirmed instalments (debt knock-out C4)', fmtSAR(D.emiConf), fmtSAR(R.emiConf), same(D.emiConf, R.emiConf) + (D.possEmi > 0 ? '; ' + fmtSAR(D.possEmi) + ' a month of fixed payments kept as operating costs until confirmed' : '')) +
+      r3('CFADS, monthly, on the statement’s own margin', fmtSAR(stCF), fmtSAR(cfOwn), same(stCF, cfOwn)) +
+      r3('CFADS the engine sizes on', '', fmtSAR(R.cfAvg), Math.abs(R.cfAvg - cfOwn) < 0.01 ? 'No Z1 adjustment' : 'After Z1') +
+      '</tbody></table></div></section>';
+  }
   h += '<section class="panel span2"><h3>Month by month</h3><div class="tbl-wrap"><table class="ctab"><thead><tr><th>Month</th><th>Money in</th><th>Sales</th><th>True turnover</th><th>Operating out</th><th>Drawings</th><th>Instalments</th><th>CFADS</th><th>End balance</th></tr></thead><tbody>' +
     res.months.map(m => '<tr' + (res.useMonths.includes(m) ? '' : ' class="partial"') + '><td>' + res.periodLabel[m.k] + (res.useMonths.includes(m) ? '' : ' (part)') + '</td><td>' + k0(m.G) + '</td><td>' + k0(m.salesGross - m.circ - m.dup - m.ret) + '</td><td>' + k0(m.T) + '</td><td>' + k0(m.O) + '</td><td>' + k0(m.draw) + '</td><td>' + k0(m.emi) + '</td><td>' + k0(m.cfads) + '</td><td>' + (m.endBal == null ? '–' : k0(m.endBal)) + '</td></tr>').join('') +
     '</tbody></table></div><p class="sub" style="margin-top:8px">Amounts in SAR thousands. CFADS = true turnover − operating out − 60% of drawings − tax.</p></section>';
+  const X2 = res.extra, pm = res.months, lab = k => res.periodLabel[k], th = pm.map(m => '<th>' + esc(lab(m.k).replace(/ \d{4}/g, '')) + '</th>').join('');
+  const cfRow = (name, key, sgn) => '<tr><td>' + name + '</td>' + pm.map(m => '<td>' + k0(sgn * X2.cfs[m.k][key]) + '</td>').join('') + '</tr>';
+  const net = m => { const c = X2.cfs[m.k]; return c.opIn - c.opOut - c.tax - c.inv + c.finIn - c.finOut + c.othIn - c.othOut; };
+  h += '<section class="panel span2"><h3>Net cash flow statement (item t)</h3><p class="sub">Every line sits in one section, so the statement adds back to the change in balance.</p><div class="tbl-wrap"><table class="ctab"><thead><tr><th>SAR thousands</th>' + th + '</tr></thead><tbody>' +
+    cfRow('Sales receipts', 'opIn', 1) + cfRow('Operating payments', 'opOut', -1) + cfRow('Zakat and income tax', 'tax', -1) +
+    '<tr><td><b>Operating cash flow</b></td>' + pm.map(m => { const c = X2.cfs[m.k]; return '<td><b>' + k0(c.opIn - c.opOut - c.tax) + '</b></td>'; }).join('') + '</tr>' +
+    cfRow('Investing: equipment and vehicles', 'inv', -1) + cfRow('Financing in: loans, owner money', 'finIn', 1) + cfRow('Financing out: instalments, drawings', 'finOut', -1) + cfRow('Other in: own accounts, related, refunds, unplaced', 'othIn', 1) + cfRow('Other out: own accounts', 'othOut', -1) +
+    '<tr><td><b>Net cash flow</b></td>' + pm.map(m => '<td><b>' + k0(net(m)) + '</b></td>').join('') + '</tr><tr><td>End balance</td>' + pm.map(m => '<td>' + (m.endBal == null ? '–' : k0(m.endBal)) + '</td>').join('') + '</tr></tbody></table></div>' +
+    (X2.tie != null ? '<p class="sub" style="margin-top:8px">' + (Math.abs(X2.tie) < 1 ? 'Ties out: net cash flow equals the change in balance over the period.' : 'Does not tie: net cash flow differs from the change in balance by ' + fmtSAR(Math.abs(X2.tie)) + '.') + '</p>' : '') + '</section>';
+  let bal = '';
+  if (X2.bal) {
+    let s1 = '';
+    if (o && R.decision !== 'Decline') { let bestD = 0, bestC = -1, pick = 0; for (let dd = 1; dd <= 28; dd++) { const ms = {}; res.daily.forEach(x => { const dt = new Date(x.t); if (dt.getUTCDate() === dd) ms[ymKey(x.t)] = x.bal >= o.P; }); const v = Object.values(ms), c = v.length ? v.filter(Boolean).length / v.length : 0; if (c > bestC) { bestC = c; bestD = dd; } if (!pick && c >= 0.9) pick = dd; }
+      s1 = '<dt>Instalment day by balance coverage (S1)</dt><dd>' + (pick ? 'Day ' + pick + ': the balance covered ' + fmtSAR(o.P) + ' in at least 90% of months' : 'No day reaches 90%; best is day ' + bestD + ' at ' + pct(bestC)) + '. The engine’s rule of thumb gives day ' + o.day + '.</dd><dt>Days the balance covered the instalment (n)</dt><dd>' + pct(res.daily.filter(x => x.bal >= o.P).length / res.daily.length) + '</dd>'; }
+    const ln = l => l ? ((l.cr || l.dr) < 100 ? 'SAR ' + (l.cr || l.dr).toFixed(2) : fmtSAR(l.cr || l.dr)) + ' on ' + fmtDate(l.t) : '–';
+    bal = '<section class="panel"><h3>Balances and liquidity (n, o, s)</h3><dl class="kv"><dt>Average balance</dt><dd>' + fmtSAR(X2.bal.avg) + '</dd><dt>Average, leaving out days after dressed deposits (s)</dt><dd>' + (X2.bal.skipped ? fmtSAR(X2.bal.avgEx) + ' (' + X2.bal.skipped + ' days left out)' : 'Same: no dressed deposits found') + '</dd><dt>Lowest balance</dt><dd>' + fmtSAR(X2.bal.min) + ' on ' + fmtDate(X2.bal.minT) + '</dd><dt>Highest balance</dt><dd>' + fmtSAR(X2.bal.max) + ' on ' + fmtDate(X2.bal.maxT) + '</dd>' +
+      '<dt>Largest credit</dt><dd>' + ln(X2.ext.maxCr) + '</dd><dt>Smallest credit</dt><dd>' + ln(X2.ext.minCr) + '</dd><dt>Largest debit</dt><dd>' + ln(X2.ext.maxDr) + '</dd><dt>Smallest debit</dt><dd>' + ln(X2.ext.minDr) + '</dd>' + s1 + '</dl></section>';
+  }
+  const reg = X2.regular.filter(x => x.paid > 0 || x.c === 'DR-PAY');
+  h += bal + '<section class="panel"><h3>Costs, suppliers and regular payments</h3><dl class="kv">' +
+    (X2.ratios ? '<dt>Cost ratios to turnover (M3)</dt><dd>Suppliers ' + pct(X2.ratios.sup) + ', payroll ' + pct(X2.ratios.pay, 1) + ', rent ' + pct(X2.ratios.rent, 1) + ', utilities ' + pct(X2.ratios.util, 1) + '</dd>' : '') +
+    '<dt>Supplier concentration (f)</dt><dd>' + (X2.sup.n ? X2.sup.n + ' suppliers; largest ' + pct(X2.sup.top) + ' (' + esc(X2.sup.topName) + '); HHI ' + X2.sup.hhi.toFixed(2) : 'No supplier transfers found') + '</dd>' +
+    '<dt>Fixed and variable costs (M4, M5)</dt><dd>' + (!X2.cost ? 'Needs 6 full months' : X2.cost.ok ? 'Fixed about ' + fmtSAR(X2.cost.F) + ' a month, variable ' + pct(X2.cost.v) + ' of sales; break-even ' + fmtSAR(X2.cost.be) + ', margin of safety ' + pct(X2.cost.mos) + ', ' + X2.cost.below + ' month' + (X2.cost.below === 1 ? '' : 's') + ' below it' : 'No reliable split: costs do not move with sales in a way a straight line fits') + '</dd>' +
+    '<dt>Working-capital lag (M6)</dt><dd>' + (X2.lag ? (X2.lag.corr > 0.3 ? 'Supplier payments lead sales by about ' + X2.lag.weeks * 7 + ' days (fit ' + X2.lag.corr.toFixed(2) + ')' : 'No clear lead between supplier payments and sales') : 'Needs 26 weeks') + '</dd>' +
+    reg.map(x => '<dt>' + x.name + ' paid (p' + (x.c === 'DR-VAT' || x.c === 'DR-GOSI' ? ', B3' : x.c === 'DR-RENT' || x.c === 'DR-UTIL' ? ', B4' : '') + ')</dt><dd>' + x.paid + ' of ' + x.of + ' months' + (x.missing.length && x.paid ? '; none in ' + x.missing.slice(0, 4).map(esc).join(', ') + (x.missing.length > 4 ? '…' : '') : '') + '</dd>').join('') +
+    '<dt>New borrowing in the last 90 days (B6)</dt><dd>' + X2.hunger.finN + ' financing credit' + (X2.hunger.finN === 1 ? '' : 's') + (X2.hunger.finN ? ' worth ' + fmtSAR(X2.hunger.finV) : '') + ', ' + X2.hunger.bnplN + ' BNPL repayment' + (X2.hunger.bnplN === 1 ? '' : 's') + '</dd>' +
+    '<dt>Fee and penalty load (B7)</dt><dd>Bank fees ' + pct(X2.fees.load, 2) + ' of turnover, ' + X2.fees.penalties + ' penalt' + (X2.fees.penalties === 1 ? 'y' : 'ies') + '; card-processing fees ' + pct(X2.fees.cardLoad, 2) + ', shown apart because they rise with sales</dd>' +
+    (X2.payers.length ? '<dt>Payer rhythm (R9)</dt><dd>' + X2.payers.map(p => esc(p.name) + ': every ' + Math.round(p.every) + ' days' + (p.drift != null && Math.abs(p.drift) > 0.25 ? ', recently ' + (p.drift > 0 ? 'slower' : 'faster') + ' by ' + pct(Math.abs(p.drift)) : '')).join('; ') + '</dd>' : '') + '</dl></section>';
+  const cm = Object.keys(CATS).filter(c => X2.catMonth[c]);
+  h += '<section class="panel span2"><h3>Categories by month (item a)</h3><div class="tbl-wrap"><table class="ctab"><thead><tr><th>SAR thousands</th>' + th + '</tr></thead><tbody>' + cm.map(c => '<tr><td>' + CATS[c][0] + '</td>' + pm.map(m => '<td>' + (X2.catMonth[c][m.k] ? k0(X2.catMonth[c][m.k]) : '') + '</td>').join('') + '</tr>').join('') + '</tbody></table></div></section>';
   const cats = Object.keys(CATS).filter(c => res.byCat[c]);
   h += '<section class="panel span2"><h3>Categories</h3><div class="tbl-wrap"><table class="ctab"><thead><tr><th>Category</th><th>Code</th><th>Treated as</th><th>Lines</th><th>Money in</th><th>Money out</th></tr></thead><tbody>' +
     cats.map(c => '<tr><td>' + CATS[c][0] + '</td><td>' + c + '</td><td>' + CATS[c][2] + '</td><td>' + res.byCat[c].n + '</td><td>' + (res.byCat[c].in ? k0(res.byCat[c].in) : '') + '</td><td>' + (res.byCat[c].out ? k0(res.byCat[c].out) : '') + '</td></tr>').join('') +
@@ -2044,7 +2178,7 @@ const RULES_IN = [
   ['Card settlement wording such as POS, mada, PAYMADA, PAYVISA, PAYMCCR, PAYGN, merchant, settlement, Geidea, نقاط البيع', 'CR-CARD'],
   ['Cash deposit wording such as cash deposit, CDM, deposit machine, إيداع نقدي', 'CR-CASH'],
   ['Government payer wording such as Etimad, ministry, وزارة, government, Amana', 'CR-GOV'],
-  ['Transfer wording (transfer, SARIE, IPS, instant, SWIFT, حوالة, تحويل), or a counterparty column', 'CR-CUST'],
+  ['Transfer wording (transfer, SARIE, IPS, instant, SWIFT, حوالة, تحويل), or a counterparty column; counted as a sale only with a company name or a repeat payment', 'CR-CUST'],
   ['Anything else: never counted as a sale', 'CR-OTHER']
 ];
 const RULES_OUT = [
@@ -2066,14 +2200,15 @@ const RULES_OUT = [
   ['Penalty or fine wording', 'DR-FEE'],
   ['Fee or charge wording such as fee, charge, commission, MDR, رسوم, عمولة, or a card-processing (merchant) fee; on a transfer, only when the fee is the line itself, not a fee field inside the transfer', 'DR-FEE'],
   ['Cash withdrawal wording such as ATM, cash withdrawal, سحب نقدي', 'DR-CASH'],
-  ['Vehicle or equipment sellers such as motors, auto, vehicle, equipment, machinery, معدات, سيارات', 'DR-CAPEX'],
+  ['Vehicle or equipment sellers such as motors, auto, vehicle, equipment, machinery, معدات, سيارات, unless the line is for inventory or stock', 'DR-CAPEX'],
   ['Card purchase wording such as POS, purchase, card, شراء, when the line is not a transfer', 'DR-CARD'],
-  ['Supplier or invoice wording such as supplier, vendor, invoice, buying goods, مورد, فاتورة, شراء بضاعة', 'DR-SUP'],
+  ['Supplier or invoice wording such as supplier, vendor, invoice, buying goods, inventory, stock, مورد, فاتورة, شراء بضاعة, مخزون', 'DR-SUP'],
   ['Transfer wording, or a counterparty column', 'DR-SUP'],
   ['Anything else: counted as an operating cost, to be safe', 'DR-OTHER']
 ];
 const PATTERNS = [
-  ['Same amount (within 1%) to the same party, once a month for 3 months or more, all within a 6-day window', 'Relabelled as a possible instalment and marked for review', 'DR-EMI'],
+  ['Same amount (within 1%) to the same party, once a month for 3 months or more, all within a 6-day window', 'Kept as an operating cost and marked as a possible instalment; when material, the case asks for confirmation', 'x_obl'],
+  ['A customer transfer from a payer seen in only one month, with no company name', 'Left out of turnover until the payer is confirmed as a customer (R1)', 't_T'],
   ['A payment of SAR 1,000 or more, then money back from the same party within 7 days, within 10%', 'Both legs leave turnover and operating costs (F6)', 't_T'],
   ['Same direction, same amount, same payee and, where the lines carry one, the same reference number, within 2 days (card settlements and fees skipped)', 'The second line is a duplicate and leaves the totals (F5)', 't_T'],
   ['The largest sales credit in a month, above 40% of that month’s net sales', 'The part above 40% leaves turnover (C8)', 't_T'],
